@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 set -e
-STAGE_SRC_DIR="/home/ubuntu/ecommerce_apis_with_sequelize"
+STAGE_SRC_DIR="/home/ubuntu/MEE-MLA"
 
 m_stage_deployment() {
     ##### changing the owner for the files
@@ -19,7 +19,7 @@ m_prod_deployment() {
   #/usr/local/bin/aws s3 cp s3://iidm-env-private/prodStore.env $STAGE_SRC_DIR/.env
 
 }
-if [ "$DEPLOYMENT_GROUP_NAME" == "KalkiDeploymentGroup" ]; then
+if [ "$DEPLOYMENT_GROUP_NAME" == "MEE-MLAdeploymentgroup" ]; then
     echo *************************************Running Deployment***********************************
     m_stage_deployment
 fi
