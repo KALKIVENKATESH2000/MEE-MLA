@@ -29,8 +29,6 @@ admin.site.site_title = 'admin'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    path('', include('master.urls')),
-    path('user/', include('user.urls')),
 ]
 
 if settings.DEBUG:
