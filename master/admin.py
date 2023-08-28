@@ -1,22 +1,23 @@
 from django.contrib import admin
-from .models import Report, Feed, Scheme, FeedLike, FeedComment
+from .models import Report, Post, Scheme, PostLike, PostComment
 # Register your models here.
 
 class ReportAdmin(admin.ModelAdmin):
     list_display =  [f.name for f in Report._meta.get_fields()]
 admin.site.register(Report, ReportAdmin)
 
-class FeedAdmin(admin.ModelAdmin):
-    list_display =  [f.name for f in Feed._meta.get_fields()]
-admin.site.register(Feed, FeedAdmin)
+class PostAdmin(admin.ModelAdmin):
+    list_display =  [f.name for f in Post._meta.get_fields()]
+admin.site.register(Post, PostAdmin)
 
-class FeedLikeAdmin(admin.ModelAdmin):
-    list_display =  [f.name for f in FeedLike._meta.get_fields()]
-admin.site.register(FeedLike, FeedLikeAdmin)
+class PostLikeAdmin(admin.ModelAdmin):
+    list_display =  [f.name for f in PostLike._meta.get_fields()]
+admin.site.register(PostLike, PostLikeAdmin)
 
-class FeedCommentAdmin(admin.ModelAdmin):
-    list_display =  [f.name for f in FeedComment._meta.get_fields()]
-admin.site.register(FeedComment, FeedCommentAdmin)
+class PostCommentAdmin(admin.ModelAdmin):
+    # list_display =  [f.name for f in PostComment._meta.get_fields()]
+    list_display = ["id"]
+admin.site.register(PostComment, PostCommentAdmin)
 
 class SchemeAdmin(admin.ModelAdmin):
     list_display =  [f.name for f in Scheme._meta.get_fields()]

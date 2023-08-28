@@ -15,10 +15,10 @@ from .views import *
 urlpatterns = [
     path('reports/', ReportListCreateView.as_view(), name='reports-list-create'),
     path('reports/<int:pk>/', ReportRetrieveUpdateDeleteView.as_view(), name='report-retrieve-update-delete'),
-    path('feeds/', FeedListCreateView.as_view(), name='feeds-list-create'),
-    path('feeds/<int:pk>/', FeedRetrieveUpdateDeleteView.as_view(), name='feed-retrieve-update-delete'),
+    path('posts/', PostListCreateView.as_view(), name='posts-list-create'),
+    path('posts/<int:pk>/', PostRetrieveUpdateDeleteView.as_view(), name='post-retrieve-update-delete'),
     path('schemas/', SchemaListCreateView.as_view(), name='schemas-list-create'),
     path('schemas/<int:pk>/', SchemaRetrieveUpdateDeleteView.as_view(), name='schema-retrieve-update-delete'),
-    path('feeds/<int:feed_id>/like/', like_feed, name='like-feed'),
-    path('feeds/<int:feed_id>/comments/', create_comment, name='create-comment'),
+    path('posts/<int:post_id>/like/', like_post, name='like-post'),
+    path('posts/<int:post_id>/comments/', create_comment, name='create-comment'),
 ]

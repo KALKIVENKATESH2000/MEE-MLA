@@ -1,5 +1,5 @@
 from rest_framework import serializers 
-from .models import Report, Feed, Scheme, FeedLike, FeedComment
+from .models import Report, Post, Scheme, PostLike, PostComment
 from user.serializers import UserSerializer
  
  
@@ -9,18 +9,18 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = "__all__"
         
-class FeedCommentSerializer(serializers.ModelSerializer):
+class PostCommentSerializer(serializers.ModelSerializer):
  
     class Meta:
-        model = FeedComment
+        model = PostComment
         fields = "__all__"
                 
-class FeedSerializer(serializers.ModelSerializer):
-    comments = FeedCommentSerializer(many=True, read_only=True)
+class PostSerializer(serializers.ModelSerializer):
+    comments = PostCommentSerializer(many=True, read_only=True)
     user = UserSerializer(read_only=True)
 
     class Meta:
-        model = Feed
+        model = Post
         fields = "__all__"
         
 
@@ -31,8 +31,8 @@ class SchemeSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
         
-class FeedLikeSerializer(serializers.ModelSerializer):
+class postLikeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FeedLike
+        model = PostLike
         fields = "__all__"
         

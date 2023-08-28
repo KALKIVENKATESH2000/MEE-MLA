@@ -4,10 +4,11 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 
-from .models import Report, Feed, Scheme, FeedLike, FeedComment
-from .serializers import ReportSerializer,FeedLikeSerializer,SchemeSerializer,FeedSerializer, FeedCommentSerializer
+from .models import Report, Post, Scheme, PostLike, PostComment
+from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer, PostCommentSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 # Create your views here.
 
@@ -80,17 +81,31 @@ class ReportRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ReportSerializer
     
     
-class FeedListCreateView(generics.ListCreateAPIView):
-    queryset = Feed.objects.all()
-    serializer_class = FeedSerializer
-    permission_classes = [IsAuthenticated]
+class PostListCreateView(generics.ListCreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
     
     def perform_create(self, serializer):
+        permission_classes = [IsAuthenticated]
         serializer.save(user=self.request.user)
 
-class FeedRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Feed.objects.all()
-    serializer_class = FeedSerializer
+class PostRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def perform_update(self, serializer):
+        if serializer.instance.user == self.request.user:
+            serializer.save()
+        else:
+            raise PermissionDenied("You don't have permission to update this post.")
+
+    def perform_destroy(self, instance):
+        if instance.user == self.request.user:
+            instance.delete()
+            return Response({"message": "Post deleted successfully"}, status=status.HTTP_200_OK)
+        else:
+            raise PermissionDenied("You don't have permission to delete this post.")
     
 class SchemaListCreateView(generics.ListCreateAPIView):
     queryset = Scheme.objects.all()
@@ -109,37 +124,37 @@ class SchemaRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def like_feed(request, feed_id):
+def like_post(request, post_id):
     try:
-        feed = Feed.objects.get(pk=feed_id)
-    except Feed.DoesNotExist:
-        return Response({"message": "Feed not found."}, status=status.HTTP_404_NOT_FOUND)
+        post = Post.objects.get(pk=post_id)
+    except post.DoesNotExist:
+        return Response({"message": "post not found."}, status=status.HTTP_404_NOT_FOUND)
 
     user = request.user
-    existing_like = FeedLike.objects.filter(user=user, feed=feed).first()
+    existing_like = PostLike.objects.filter(user=user, post=post).first()
     if existing_like:
-        return Response({"message": "You have already liked this feed."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
 
-    FeedLike.objects.create(user=user, feed=feed)
+    PostLike.objects.create(user=user, post=post)
     
-    feed.likes = FeedLike.objects.filter(feed=feed, is_like=True).count()
-    feed.save()
-    serializer = FeedSerializer(feed)
-    return Response({"message": "Feed liked successfully.", "data":serializer.data}, status=status.HTTP_201_CREATED)
+    post.likes = PostLike.objects.filter(post=post, is_like=True).count()
+    post.save()
+    serializer = PostSerializer(post)
+    return Response({"message": "post liked successfully.", "data":serializer.data}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_comment(request, feed_id):
+def create_comment(request, post_id):
     try:
-        feed = Feed.objects.get(pk=feed_id)
-    except Feed.DoesNotExist:
-        return Response({"message": "Feed not found."}, status=status.HTTP_404_NOT_FOUND)
+        post = Post.objects.get(pk=post_id)
+    except post.DoesNotExist:
+        return Response({"message": "post not found."}, status=status.HTTP_404_NOT_FOUND)
 
     content = request.data.get('content', None)
     if not content:
         return Response({"message": "Comment text is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    comment = FeedComment.objects.create(user=request.user, feed=feed, content=content)
-    serializer = FeedCommentSerializer(comment)
+    comment = PostComment.objects.create(user=request.user, post=post, content=content)
+    serializer = PostCommentSerializer(comment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)

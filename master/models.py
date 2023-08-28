@@ -7,7 +7,7 @@ REPORT_STATUS = (
     ("Solved", "Solved"),
 )
 
-FEED_STATUS = (
+post_STATUS = (
     ("Active", "Active"),
     ("Inactive", "Inactive"),
     ("Deleted", "Deleted"),
@@ -38,53 +38,55 @@ class Report(models.Model):
         
         
         
-class Feed(models.Model):
+class Post(models.Model):
     user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
     title           = models.TextField()
-    image           = models.FileField(upload_to='uploads/feeds',null=True,blank=True)
-    video           = models.FileField(upload_to='uploads/feeds',null=True,blank=True)
+    image           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
+    video           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
+    tags            = models.CharField(max_length=50)
     likes           = models.IntegerField(default=0)
     address         = models.TextField()
-    status          = models.CharField(max_length=20,choices=FEED_STATUS, default='Active')
+    status          = models.CharField(max_length=20,choices=post_STATUS, default='Active')
     createdAt       = models.DateTimeField(auto_now_add=True)
     updatedAt       = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
     class Meta:
-        db_table = 'feeds'
+        db_table = 'posts'
         
         
-class FeedLike(models.Model):
+class PostLike(models.Model):
     user                =   models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
-    feed                =   models.ForeignKey(Feed, on_delete=models.CASCADE)
+    post                =   models.ForeignKey(Post, on_delete=models.CASCADE)
     is_like             =   models.BooleanField(default=True)
     
     def __str__(self):
-        return f"{self.user.username} likes {self.feed}"
+        return f"{self.user.username} likes {self.post}"
     class Meta:
-        db_table = 'feed_likes'
+        db_table = 'post_likes'
     
-class FeedComment(models.Model):
+class PostComment(models.Model):
     user                =   models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
-    feed                =   models.ForeignKey(Feed, on_delete=models.CASCADE,related_name='comments')
+    post                =   models.ForeignKey(Post, on_delete=models.CASCADE,related_name='comments')
     content             =   models.TextField()
     likes               =   models.PositiveIntegerField(default=0)
     created_at          =   models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Comment by {self.user.username} on {self.feed.title}"
+        return f"Comment by {self.user.username} on {self.post.title}"
     class Meta:
-        db_table = 'feed_comments'
+        db_table = 'post_comments'
 
         
 class Scheme(models.Model):
     user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
     title           = models.TextField()
-    image           = models.FileField(upload_to='uploads/feeds',null=True,blank=True)
-    video           = models.FileField(upload_to='uploads/feeds',null=True,blank=True)
+    tags            = models.CharField(max_length=50)
+    image           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
+    video           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     address         = models.TextField()
-    status          = models.CharField(max_length=20,choices=FEED_STATUS, default='Active')
+    status          = models.CharField(max_length=20,choices=post_STATUS, default='Active')
     createdAt       = models.DateTimeField(auto_now_add=True)
     updatedAt       = models.DateTimeField(auto_now=True)
 
@@ -92,3 +94,16 @@ class Scheme(models.Model):
         return self.title
     class Meta:
         db_table = 'schemes'
+        
+class Announcement(models.Model):
+    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
+    title           = models.CharField(max_length=100)
+    description     = models.TextField()
+    status          = models.CharField(max_length=20,choices=post_STATUS, default='Active')
+    createdAt       = models.DateTimeField(auto_now_add=True)
+    updatedAt       = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+    class Meta:
+        db_table = 'announcements'
