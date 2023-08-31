@@ -11,26 +11,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['first_name', 'last_name', 'email', 'password']
 
     def create(self, validated_data):
         user = User.objects.create(
-            username=validated_data['username'],
+            username=validated_data['email'],
             email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
         )
         user.set_password(validated_data['password'])
         user.save()
         return user
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['id','username', 'email']
-        
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ['full_name','phone', 'email', 'gender', 'image']
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -48,3 +40,17 @@ class LoginSerializer(serializers.Serializer):
                     'refresh': str(refresh)
                 }
         raise serializers.ValidationError('Incorrect credentials')
+  
+    
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id','first_name', 'last_name', 'email']
+        
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    email = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Profile
+        fields = ['user', 'email', 'full_name','phone', 'gender', 'image']

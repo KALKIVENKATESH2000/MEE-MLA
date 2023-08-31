@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 
-from .models import Report, Post, Scheme, PostLike, PostComment
-from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer, PostCommentSerializer
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer
+from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
@@ -158,3 +158,72 @@ def create_comment(request, post_id):
     comment = PostComment.objects.create(user=request.user, post=post, content=content)
     serializer = PostCommentSerializer(comment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+class AnnouncementListCreateView(generics.ListCreateAPIView):
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    
+    
+    def perform_create(self, serializer):
+        permission_classes = [IsAuthenticated]
+        serializer.save(user=self.request.user)
+
+class AnnouncementRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    permission_classes = [IsAuthenticated]
+    
+    
+class PollList(generics.ListCreateAPIView):
+    queryset = Poll.objects.all()
+    serializer_class = PollSerializer
+
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data, many=isinstance(request.data, list))
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class PollRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Poll.objects.all()
+    serializer_class = PollSerializer
+  
+    
+class VoteView(generics.UpdateAPIView):
+    queryset = Choice.objects.all()
+    serializer_class = ChoiceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        choice = self.get_object()
+        user = request.user
+
+        if user in choice.voters.all():
+            raise PermissionDenied("You have already voted for this choice.")
+
+        choice.votes += 1
+        choice.voters.add(user)
+        choice.save()
+        
+        return Response({"message": "Vote recorded successfully"}, status=status.HTTP_200_OK)
+
+
+class SurveyList(generics.ListCreateAPIView):
+    queryset = Survey.objects.all()
+    serializer_class = SurveySerializer
+
+
+class SurveyDetail(generics.RetrieveAPIView):
+    queryset = Survey.objects.all()
+    serializer_class = SurveySerializer
+
+class QuestionDetail(generics.RetrieveAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+class AnswerDetail(generics.RetrieveAPIView):
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializer

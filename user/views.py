@@ -43,5 +43,8 @@ class UserProfileDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
+        user = self.request.user
         user_profile, created = Profile.objects.get_or_create(user=self.request.user)
+        user_profile.email = user.email
+        user_profile.full_name = user.first_name+' '+user.last_name
         return user_profile

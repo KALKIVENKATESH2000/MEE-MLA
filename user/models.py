@@ -21,6 +21,7 @@ def upload(instance, filename):
 GENDER_CHOICES = (
     ('Male', 'Male'),
     ('Female', 'Female'),
+    ('Other', 'Other'),
 )
 
 class Profile(models.Model):

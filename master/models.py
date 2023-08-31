@@ -107,3 +107,59 @@ class Announcement(models.Model):
         return self.title
     class Meta:
         db_table = 'announcements'
+        
+        
+class Poll(models.Model):
+    question = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.question
+    
+    class Meta:
+        db_table = 'polls'
+
+class Choice(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='choices')
+    text = models.CharField(max_length=100)
+    votes = models.IntegerField(default=0)
+    voters = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+
+    def __str__(self):
+        return self.text
+    
+    class Meta:
+        db_table = 'poll_choices'
+
+
+
+class Survey(models.Model):
+    title = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.title
+    class Meta:
+        db_table = 'surveys'
+class Question(models.Model):
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="questions")
+    text = models.TextField()
+
+    def __str__(self):
+        return self.text
+    
+    class Meta:
+        db_table = 'survey_questions'
+    
+
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="answers")
+    text = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.text
+    
+    class Meta:
+        db_table = 'survey_answers'
+
+
+
+
