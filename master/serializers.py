@@ -18,10 +18,15 @@ class PostCommentSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     comments = PostCommentSerializer(many=True, read_only=True)
     user = UserSerializer(read_only=True)
+    tags = serializers.SerializerMethodField()
+    
 
     class Meta:
         model = Post
         fields = "__all__"
+        
+    def get_tags(self, obj):
+        return [user.username for user in obj.tags.all()]
         
 
 class SchemeSerializer(serializers.ModelSerializer):

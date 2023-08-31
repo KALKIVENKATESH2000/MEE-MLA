@@ -43,7 +43,7 @@ class Post(models.Model):
     title           = models.TextField()
     image           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     video           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
-    tags            = models.CharField(max_length=50)
+    tags            = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='tagged_in_posts', null=True,blank=True)
     likes           = models.IntegerField(default=0)
     address         = models.TextField()
     status          = models.CharField(max_length=20,choices=post_STATUS, default='Active')
