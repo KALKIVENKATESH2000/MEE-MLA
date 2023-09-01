@@ -34,7 +34,7 @@ urlpatterns = [
     path('answers/<int:pk>/', AnswerDetail.as_view(), name='answer-detail'),
     
     
-    path('events/', EventList.as_view(), name='event-list'),
-    path('create-meet/', CreateEvent.as_view(), name='create-meet'),
+    # path('events/', EventList.as_view(), name='event-list'),
+    # path('create-meet/', CreateEvent.as_view(), name='create-meet'),
 
 ]

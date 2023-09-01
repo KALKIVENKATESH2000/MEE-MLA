@@ -10,8 +10,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from user.permissions import IsRegularUser, IsSuperuser
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 # Create your views here.
 
 
@@ -198,32 +196,32 @@ class EventList(generics.ListCreateAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     
-class CreateEvent(APIView):
-    permission_classes = [IsAuthenticated]
+# class CreateEvent(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format=None):
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            print("kkkkkkkkkkkkkkkkkkkkkkkk",serializer)
-            event = serializer.save(user=request.user)
+#     def post(self, request, format=None):
+#         serializer = EventSerializer(data=request.data)
+#         if serializer.is_valid():
+#             print("kkkkkkkkkkkkkkkkkkkkkkkk",serializer)
+#             event = serializer.save(user=request.user)
 
-            access_token = request.data.get('access_token')  # Get the user's access token
+#             access_token = request.data.get('access_token')  # Get the user's access token
 
-            service = build('calendar', 'v3', access_token=access_token)
+#             service = build('calendar', 'v3', access_token=access_token)
 
-            event_result = service.events().insert(
-                calendarId='primary',  # Change to the desired calendar ID
-                body={
-                    'summary': event.event_name,
-                    'description': event.description,
-                    'start': {'dateTime': event.start_datetime.isoformat()},
-                    'end': {'dateTime': event.end_datetime.isoformat()},
-                    'conferenceData': {'createRequest': {'requestId': 'meet'}}
-                }
-            ).execute()
+#             event_result = service.events().insert(
+#                 calendarId='primary',  # Change to the desired calendar ID
+#                 body={
+#                     'summary': event.event_name,
+#                     'description': event.description,
+#                     'start': {'dateTime': event.start_datetime.isoformat()},
+#                     'end': {'dateTime': event.end_datetime.isoformat()},
+#                     'conferenceData': {'createRequest': {'requestId': 'meet'}}
+#                 }
+#             ).execute()
 
-            event.meet_link = event_result.get('conferenceData', {}).get('entryPoints', [])[0].get('uri')
-            event.save()
-            print(event.meet_link)
-            return Response({'meet_link': event.meet_link})
-        return Response(serializer.errors)
+#             event.meet_link = event_result.get('conferenceData', {}).get('entryPoints', [])[0].get('uri')
+#             event.save()
+#             print(event.meet_link)
+#             return Response({'meet_link': event.meet_link})
+#         return Response(serializer.errors)
