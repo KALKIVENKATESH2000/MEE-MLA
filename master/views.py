@@ -19,14 +19,15 @@ class ReportListCreateView(generics.ListCreateAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     # permission_classes = [IsAuthenticated]
-
+    def perform_create(self, serializer):
+        permission_classes = [IsAuthenticated]
+        serializer.save(user=self.request.user)
+        
 class ReportRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     # permission_classes = [IsAuthenticated]
-    def perform_create(self, serializer):
-        permission_classes = [IsAuthenticated]
-        serializer.save(user=self.request.user)
+
 
 class UserReportsView(generics.ListAPIView):
     serializer_class = ReportSerializer
