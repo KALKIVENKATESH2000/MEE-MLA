@@ -25,6 +25,7 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         )
         superadmin.set_password(validated_data['password'])
         superadmin.is_staff = True
+        # superadmin.is_superuser = True
         add_permission = Permission.objects.get(name='Can add question')
         view_permission = Permission.objects.get(name='Can view question')
         change_permission = Permission.objects.get(name='Can change question')

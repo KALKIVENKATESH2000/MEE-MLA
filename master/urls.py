@@ -15,6 +15,7 @@ from .views import *
 urlpatterns = [
     path('reports/', ReportListCreateView.as_view(), name='reports-list-create'),
     path('reports/<int:pk>/', ReportRetrieveUpdateDeleteView.as_view(), name='report-retrieve-update-delete'),
+    path('reports/user/', UserReportsView.as_view(), name='reports-by-user'),
     path('posts/', PostListCreateView.as_view(), name='posts-list-create'),
     path('posts/<int:pk>/', PostRetrieveUpdateDeleteView.as_view(), name='post-retrieve-update-delete'),
     path('schemas/', SchemaListCreateView.as_view(), name='schemas-list-create'),
@@ -31,4 +32,9 @@ urlpatterns = [
     path('surveys/<int:pk>/', SurveyDetail.as_view(), name='survey-detail'),
     path('questions/<int:pk>/', QuestionDetail.as_view(), name='question-detail'),
     path('answers/<int:pk>/', AnswerDetail.as_view(), name='answer-detail'),
+    
+    
+    path('events/', EventList.as_view(), name='event-list'),
+    path('create-meet/', CreateEvent.as_view(), name='create-meet'),
+
 ]

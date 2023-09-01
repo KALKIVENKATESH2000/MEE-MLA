@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event
 # Register your models here.
 
 class ReportAdmin(admin.ModelAdmin):
@@ -63,3 +63,7 @@ class AnswerAdmin(admin.ModelAdmin):
     # list_display = ["id", "poll", 'text', 'votes']
 
 admin.site.register(Answer, AnswerAdmin)
+
+class EventAdmin(admin.ModelAdmin):
+    list_display =  [f.name for f in Event._meta.get_fields()]
+admin.site.register(Event, EventAdmin)

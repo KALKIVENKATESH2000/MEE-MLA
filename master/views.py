@@ -3,82 +3,39 @@ from django.http.response import JsonResponse
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
-
-from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer
-from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer
+from rest_framework.views import APIView
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event
+from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-
+from user.permissions import IsRegularUser, IsSuperuser
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 # Create your views here.
 
-# @api_view(['GET', 'POST', 'DELETE'])
-# def report_list(request):
-#     if request.method == 'GET':
-#         reports = Report.objects.all()
-        
-#         title = request.query_params.get('title', None)
-#         if title is not None:
-#             reports = reports.filter(title__icontains=title)
-        
-#         reports_serializer = ReportSerializer(reports, many=True)
-#         return JsonResponse(reports_serializer.data, safe=False)
-#         # 'safe=False' for objects serialization
- 
-#     elif request.method == 'POST':
-#         reports_data = JSONParser().parse(request)
-#         reports_serializer = ReportSerializer(data=reports_data)
-#         if reports_serializer.is_valid():
-#             reports_serializer.save()
-#             return JsonResponse(reports_serializer.data, status=status.HTTP_201_CREATED) 
-#         return JsonResponse(reports_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-#     elif request.method == 'DELETE':
-#         count = Report.objects.all().delete()
-#         return JsonResponse({'message': '{} reports were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
- 
- 
-# @api_view(['GET', 'PUT', 'DELETE'])
-# def report_detail(request, pk):
-#     try: 
-#         report = Report.objects.get(pk=pk) 
-#     except Report.DoesNotExist: 
-#         return JsonResponse({'message': 'The report does not exist'}, status=status.HTTP_404_NOT_FOUND) 
- 
-#     if request.method == 'GET': 
-#         report_serializer = ReportSerializer(report) 
-#         return JsonResponse(report_serializer.data) 
- 
-#     elif request.method == 'PUT': 
-#         report_data = JSONParser().parse(request) 
-#         report_serializer = ReportSerializer(report, data=report_data) 
-#         if report_serializer.is_valid(): 
-#             report_serializer.save() 
-#             return JsonResponse(report_serializer.data) 
-#         return JsonResponse(report_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
- 
-#     elif request.method == 'DELETE': 
-#         report.delete() 
-#         return JsonResponse({'message': 'Report was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
-    
-        
-# @api_view(['GET'])
-# def report_list_published(request):
-#     reports = Report.objects.filter(active="Solved")
-        
-#     if request.method == 'GET':
-#         reports_serializer = ReportSerializer(reports, many=True)
-#         return JsonResponse(reports_serializer.data, safe=False)
 
 from rest_framework import generics
 
 class ReportListCreateView(generics.ListCreateAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
+    # permission_classes = [IsAuthenticated]
 
 class ReportRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
+    # permission_classes = [IsAuthenticated]
+    def perform_create(self, serializer):
+        permission_classes = [IsAuthenticated]
+        serializer.save(user=self.request.user)
+
+class UserReportsView(generics.ListAPIView):
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]       
+    
+    def get_queryset(self):
+        return Report.objects.filter(user=self.request.user)
     
     
 class PostListCreateView(generics.ListCreateAPIView):
@@ -88,6 +45,14 @@ class PostListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         permission_classes = [IsAuthenticated]
         serializer.save(user=self.request.user)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserReports(request):
+    user = request.user
+    
+    reports = Report.objects.filter(user=user)
+    serializer = ReportSerializer(reports)
+    return Response({"message": "User  added reports.", "data":serializer.data}, status=status.HTTP_201_CREATED)
 
 class PostRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
@@ -227,3 +192,38 @@ class QuestionDetail(generics.RetrieveAPIView):
 class AnswerDetail(generics.RetrieveAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
+    
+
+class EventList(generics.ListCreateAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    
+class CreateEvent(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        serializer = EventSerializer(data=request.data)
+        if serializer.is_valid():
+            print("kkkkkkkkkkkkkkkkkkkkkkkk",serializer)
+            event = serializer.save(user=request.user)
+
+            access_token = request.data.get('access_token')  # Get the user's access token
+
+            service = build('calendar', 'v3', access_token=access_token)
+
+            event_result = service.events().insert(
+                calendarId='primary',  # Change to the desired calendar ID
+                body={
+                    'summary': event.event_name,
+                    'description': event.description,
+                    'start': {'dateTime': event.start_datetime.isoformat()},
+                    'end': {'dateTime': event.end_datetime.isoformat()},
+                    'conferenceData': {'createRequest': {'requestId': 'meet'}}
+                }
+            ).execute()
+
+            event.meet_link = event_result.get('conferenceData', {}).get('entryPoints', [])[0].get('uri')
+            event.save()
+            print(event.meet_link)
+            return Response({'meet_link': event.meet_link})
+        return Response(serializer.errors)

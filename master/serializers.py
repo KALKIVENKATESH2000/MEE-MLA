@@ -1,5 +1,5 @@
 from rest_framework import serializers 
-from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event
 from user.serializers import UserSerializer
  
  
@@ -111,3 +111,10 @@ class SurveySerializer(serializers.Serializer):
                 Answer.objects.create(question=question, text=answer_data['text'])
 
         return survey
+
+
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['id', 'event_name', 'start_datetime', 'end_datetime', 'description']

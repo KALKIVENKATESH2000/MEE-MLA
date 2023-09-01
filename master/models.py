@@ -19,6 +19,7 @@ def upload(instance, filename):
     return 'uploads/folder/{filename}'.format(filename=filename)
 
 class Report(models.Model):
+    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
     full_name       = models.CharField(max_length=150)
     email           = models.CharField(max_length=50)
     mobile_no       = models.CharField(max_length=150)
@@ -161,5 +162,34 @@ class Answer(models.Model):
         db_table = 'survey_answers'
 
 
+def generate_meet_link(event):
+    meet_domain = "https://meet.google.com/"
+    
+    event_name_slug = event.event_name.replace(" ", "-").lower()
+    # Format the start and end times properly
+    start_time = event.start_datetime.strftime("%Y%m%dT%H%M%S")
+    end_time = event.end_datetime.strftime("%Y%m%dT%H%M%S")
+    
+    # Remove any non-alphanumeric characters from the slug
+    sanitized_event_name_slug = ''.join(c for c in event_name_slug if c.isalnum() or c == '-')
+    
+    meeting_code = f"{sanitized_event_name_slug}-{start_time}-{end_time}"
+    
+    return f"{meet_domain}{meeting_code}"
 
+class Event(models.Model):
+    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
+    event_name = models.CharField(max_length=200)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    description = models.TextField()
+    meet_link = models.URLField(blank=True, null=True)  # Google Meet link
+
+    def __str__(self):
+        return self.event_name
+    
+    def save(self, *args, **kwargs):
+        if not self.meet_link:
+            self.meet_link = generate_meet_link(self)
+        super().save(*args, **kwargs)
 
