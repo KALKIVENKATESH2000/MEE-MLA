@@ -92,5 +92,23 @@ class UserProfileDetail(generics.RetrieveUpdateAPIView):
         user = self.request.user
         user_profile, created = Profile.objects.get_or_create(user=self.request.user)
         user_profile.email = user.email
+        user_profile.mla = user.is_staff
         user_profile.full_name = user.first_name+' '+user.last_name
         return user_profile
+    
+class UserMLAView(generics.RetrieveAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        user = self.request.user
+
+        # Check if the user is a superadmin (implement your own logic)
+        if user.is_staff == False:
+            try:
+                profile = Profile.objects.get(constituency=user.profile.constituency, mla=True)
+                return profile
+            except Profile.DoesNotExist:
+                pass
+
+        return None

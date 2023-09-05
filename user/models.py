@@ -31,10 +31,26 @@ GENDER_CHOICES = (
 
 class Profile(models.Model):
     user        = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, null=True)
+    mla         = models.BooleanField()
     full_name   = models.CharField(max_length=50, blank=True, null=True)
+    constituency= models.CharField(max_length=50, blank=True, null=True)
     email       = models.CharField(max_length=50, blank=True, null=True)
     phone       = models.CharField(max_length=15,  blank=True, null=True)
     gender      = models.CharField(max_length=10,choices=GENDER_CHOICES,blank=True, null=True)
+    image       = models.FileField(upload_to=upload,null=True,blank=True)
+    createdAt   = models.DateTimeField(auto_now_add=True)
+    updatedAt   = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.user.username
+    
+    
+class MLA(models.Model):
+    user        = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, null=True)
+    full_name   = models.CharField(max_length=50, blank=True, null=True)
+    constituency= models.CharField(max_length=50, blank=True, null=True)
+    email       = models.CharField(max_length=50, blank=True, null=True)
+    phone       = models.CharField(max_length=15,  blank=True, null=True)
     image       = models.FileField(upload_to=upload,null=True,blank=True)
     createdAt   = models.DateTimeField(auto_now_add=True)
     updatedAt   = models.DateTimeField(auto_now=True)

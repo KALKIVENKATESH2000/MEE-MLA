@@ -4,7 +4,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueValidator
 User = get_user_model()
 from django.contrib.auth.models import Permission
-from .models import Profile, CustomUser
+from .models import Profile, CustomUser, MLA
 
 
 # admin register serializer
@@ -92,4 +92,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Profile
-        fields = ['user', 'email', 'full_name','phone', 'gender', 'image']
+        fields = ['user', 'email', 'full_name','phone', 'gender','constituency', 'image']
+        
+class MLASerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    email = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = MLA
+        fields = ['user', 'email', 'full_name','phone','constituency', 'image']

@@ -86,7 +86,7 @@ class Scheme(models.Model):
     user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
     title           = models.CharField(max_length=250)
     description     = models.TextField()
-    tags            = models.CharField(max_length=50)
+    tags            = models.CharField(max_length=50,null=True,blank=True)
     image           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     video           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     pincode         = models.CharField(max_length=50, null=True)
