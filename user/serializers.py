@@ -4,42 +4,43 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueValidator
 User = get_user_model()
 from django.contrib.auth.models import Permission
-from .models import Profile
+from .models import Profile, CustomUser
 
 
 # admin register serializer
 class AdminRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'email', 'password']
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'party_name', 'email', 'password']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
     def create(self, validated_data):
-        superadmin = User(
+        superadmin = CustomUser(
             username=validated_data['email'],
             email=validated_data['email'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
+            party_name=validated_data['party_name'],
         )
         superadmin.set_password(validated_data['password'])
         superadmin.is_staff = True
         # superadmin.is_superuser = True
-        add_permission = Permission.objects.get(name='Can add question')
-        view_permission = Permission.objects.get(name='Can view question')
-        change_permission = Permission.objects.get(name='Can change question')
-        delete_permission = Permission.objects.get(name='Can delete question')
-        view_answer = Permission.objects.get(name='Can view answer')
+        # add_permission = Permission.objects.get(name='Can add question')
+        # view_permission = Permission.objects.get(name='Can view question')
+        # change_permission = Permission.objects.get(name='Can change question')
+        # delete_permission = Permission.objects.get(name='Can delete question')
+        # view_answer = Permission.objects.get(name='Can view answer')
 
         superadmin.save()
-        superadmin.user_permissions.add(
-            add_permission,
-            view_permission,
-            change_permission,
-            delete_permission,
-            view_answer
-        )
+        # superadmin.user_permissions.add(
+        #     add_permission,
+        #     view_permission,
+        #     change_permission,
+        #     delete_permission,
+        #     view_answer
+        # )
         return superadmin
 
 
@@ -48,7 +49,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['first_name', 'last_name', 'email', 'password']
 
     def create(self, validated_data):
@@ -82,8 +83,8 @@ class LoginSerializer(serializers.Serializer):
     
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id','first_name', 'last_name', 'email']
+        model = CustomUser
+        fields = ['id','first_name', 'last_name', 'email', 'party_name']
         
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

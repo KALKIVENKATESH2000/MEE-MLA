@@ -96,15 +96,18 @@ def like_post(request, post_id):
 
     user = request.user
     existing_like = PostLike.objects.filter(user=user, post=post).first()
-    if existing_like:
-        return Response({"message": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
-
-    PostLike.objects.create(user=user, post=post)
     
+    if existing_like:
+        existing_like.delete()
+        message = "You have unliked the post."
+    else:
+        PostLike.objects.create(user=user, post=post)
+        message = "You have liked the post."
+   
     post.likes = PostLike.objects.filter(post=post, is_like=True).count()
     post.save()
     serializer = PostSerializer(post)
-    return Response({"message": "post liked successfully.", "data":serializer.data}, status=status.HTTP_201_CREATED)
+    return Response({"message": message, "data":serializer.data}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])

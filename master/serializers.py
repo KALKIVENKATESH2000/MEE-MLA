@@ -1,7 +1,7 @@
 from rest_framework import serializers 
 from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event
-from user.serializers import UserSerializer
- 
+from user.serializers import UserSerializer,ProfileSerializer
+from user.models import CustomUser
  
 class ReportSerializer(serializers.ModelSerializer):
  
@@ -10,7 +10,6 @@ class ReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 class PostCommentSerializer(serializers.ModelSerializer):
- 
     class Meta:
         model = PostComment
         fields = "__all__"
@@ -18,19 +17,21 @@ class PostCommentSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     comments = PostCommentSerializer(many=True, read_only=True)
     user = UserSerializer(read_only=True)
+    user_profile = ProfileSerializer(source='user.profile', read_only=True)
     tags = serializers.SerializerMethodField()
     
 
     class Meta:
         model = Post
         fields = "__all__"
+
         
     def get_tags(self, obj):
         return [user.username for user in obj.tags.all()]
         
 
 class SchemeSerializer(serializers.ModelSerializer):
- 
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Scheme
         fields = "__all__"

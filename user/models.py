@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import User
+from django.conf import settings
+
 
 
 # Create your models here.
@@ -9,14 +11,17 @@ from django.contrib.auth.models import User
 def upload(instance, filename):
     return 'uploads/users/{filename}'.format(filename=filename)
 
-# class CustomUser(AbstractUser):
-#     email           = models.EmailField(verbose_name="Email", null=True, unique=True, max_length=250)
+class CustomUser(AbstractUser):
+    email           = models.EmailField(verbose_name="Email", null=True, unique=True, max_length=250)
+    party_name      = models.CharField(max_length=100)
     
-#     USERNAME_FIELD  = 'email'
-#     REQUIRED_FIELDS = ['member_id', 'username']
+    USERNAME_FIELD  = 'email'
+    REQUIRED_FIELDS = ['username']
 
-#     def __str__(self):
-#         return self.first_name + " " + self.last_name
+    def __str__(self):
+        return self.first_name + " " + self.last_name
+
+
 
 GENDER_CHOICES = (
     ('Male', 'Male'),
@@ -25,7 +30,7 @@ GENDER_CHOICES = (
 )
 
 class Profile(models.Model):
-    user        = models.OneToOneField(User,on_delete=models.CASCADE, null=True)
+    user        = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, null=True)
     full_name   = models.CharField(max_length=50, blank=True, null=True)
     email       = models.CharField(max_length=50, blank=True, null=True)
     phone       = models.CharField(max_length=15,  blank=True, null=True)

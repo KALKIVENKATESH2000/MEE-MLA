@@ -8,7 +8,7 @@ admin.site.register(Report, ReportAdmin)
 
 class PostAdmin(admin.ModelAdmin):
     # list_display =  [f.name for f in Post._meta.get_fields()]
-    list_display = ["id", "title", "user", "image", "video", "tags_list", "likes", "address", "status", "createdAt", "updatedAt"]
+    list_display = ["id", "title", "user", "image", "video", "tags_list", "likes", "pincode", "city", "state", "status", "createdAt", "updatedAt"]
     
     def tags_list(self, obj):
         return ', '.join([user.first_name for user in obj.tags.all()])
