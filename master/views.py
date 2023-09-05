@@ -5,7 +5,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework import status
 from rest_framework.views import APIView
 from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event, Constituency
-from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer, ConstituencySerializer
+from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer, ConstituencySerializer, ReportStatusSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
@@ -16,9 +16,16 @@ from user.permissions import IsRegularUser, IsSuperuser
 from rest_framework import generics
 
 class ReportListCreateView(generics.ListCreateAPIView):
-    queryset = Report.objects.all()
+    queryset = Report.objects.all().order_by('-id')
     serializer_class = ReportSerializer
-    # permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        status = self.request.GET.get('status', None)
+        if status:
+            return Report.objects.filter(status=status).order_by('-id')
+        else:
+            return Report.objects.all().order_by('-id')
+        
     def perform_create(self, serializer):
         permission_classes = [IsAuthenticated]
         serializer.save(user=self.request.user)
@@ -28,30 +35,45 @@ class ReportRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ReportSerializer
     # permission_classes = [IsAuthenticated]
 
+@api_view(['PATCH', ])
+def report_status_update(request, id):
+    try:
+        report = Report.objects.get(id=id)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    serializer = ReportStatusSerializer(report, data=request.data)
+    message={}
+    if serializer.is_valid():
+        serializer.save()
+        print(serializer.data)
+        message["success"]="Update Successful"
+        return Response({"message": message, "data":serializer.data}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class UserReportsView(generics.ListAPIView):
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]       
     
     def get_queryset(self):
-        return Report.objects.filter(user=self.request.user)
+        return Report.objects.filter(user=self.request.user).order_by('-id')
     
     
 class PostListCreateView(generics.ListCreateAPIView):
-    queryset = Post.objects.all()
+    queryset = Post.objects.all().order_by('-id')
     serializer_class = PostSerializer
     
     def perform_create(self, serializer):
         permission_classes = [IsAuthenticated]
         serializer.save(user=self.request.user)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getUserReports(request):
-    user = request.user
+        
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def getUserReports(request):
+#     user = request.user
     
-    reports = Report.objects.filter(user=user)
-    serializer = ReportSerializer(reports)
-    return Response({"message": "User  added reports.", "data":serializer.data}, status=status.HTTP_201_CREATED)
+#     reports = Report.objects.filter(user=user)
+#     serializer = ReportSerializer(reports)
+#     return Response({"message": "User  added reports.", "data":serializer.data}, status=status.HTTP_201_CREATED)
 
 class PostRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
@@ -72,7 +94,7 @@ class PostRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
             raise PermissionDenied("You don't have permission to delete this post.")
     
 class SchemaListCreateView(generics.ListCreateAPIView):
-    queryset = Scheme.objects.all()
+    queryset = Scheme.objects.all().order_by('-id')
     serializer_class = SchemeSerializer
     
     
@@ -130,7 +152,7 @@ def create_comment(request, post_id):
 
 
 class AnnouncementListCreateView(generics.ListCreateAPIView):
-    queryset = Announcement.objects.all()
+    queryset = Announcement.objects.all().order_by('-id')
     serializer_class = AnnouncementSerializer
     
     
@@ -145,7 +167,7 @@ class AnnouncementRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView
     
     
 class PollList(generics.ListCreateAPIView):
-    queryset = Poll.objects.all()
+    queryset = Poll.objects.all().order_by('-id')
     serializer_class = PollSerializer
 
     # def create(self, request, *args, **kwargs):
@@ -180,7 +202,7 @@ class VoteView(generics.UpdateAPIView):
 
 
 class SurveyList(generics.ListCreateAPIView):
-    queryset = Survey.objects.all()
+    queryset = Survey.objects.all().order_by('-id')
     serializer_class = SurveySerializer
 
 
@@ -196,13 +218,9 @@ class AnswerDetail(generics.RetrieveAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
     
-
-
-class SurveyList(generics.ListCreateAPIView):
-    queryset = Survey.objects.all()
-    serializer_class = SurveySerializer
+    
 class ConstituencyListCreate(generics.ListCreateAPIView):
-    queryset = Constituency.objects.all()
+    queryset = Constituency.objects.all().order_by('-id')
     serializer_class = ConstituencySerializer
     
 # class CreateEvent(APIView):

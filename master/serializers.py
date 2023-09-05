@@ -8,6 +8,12 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = "__all__"
         
+class ReportStatusSerializer(serializers.ModelSerializer):
+ 
+    class Meta:
+        model = Report
+        fields = ['status']
+        
 class PostCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostComment

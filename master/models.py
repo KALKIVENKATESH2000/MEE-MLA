@@ -3,8 +3,9 @@ from django.conf import settings
 
 # Create your models here.
 REPORT_STATUS = (
-    ("Pending", "Pending"),
-    ("Solved", "Solved"),
+    ("failed", "Failed"),
+    ("pending", "Pending"),
+    ("solved", "Solved"),
 )
 
 post_STATUS = (
@@ -28,7 +29,7 @@ class Report(models.Model):
     state           = models.CharField(max_length=50)
     address         = models.TextField()
     report          = models.TextField()
-    status          = models.CharField(max_length=20,choices=REPORT_STATUS, default='Pending')
+    status          = models.CharField(max_length=20,choices=REPORT_STATUS, default='pending')
     createdAt       = models.DateTimeField(auto_now_add=True)
     updatedAt       = models.DateTimeField(auto_now=True)
 
