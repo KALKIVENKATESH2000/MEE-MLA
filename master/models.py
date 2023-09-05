@@ -198,3 +198,8 @@ class Event(models.Model):
             self.meet_link = generate_meet_link(self)
         super().save(*args, **kwargs)
 
+class Constituency(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name

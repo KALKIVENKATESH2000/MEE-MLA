@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event
-from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event, Constituency
+from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer, ConstituencySerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
@@ -108,6 +108,7 @@ def like_post(request, post_id):
     post.save()
     serializer = PostSerializer(post)
     return Response({"message": message, "data":serializer.data}, status=status.HTTP_201_CREATED)
+    
 
 
 @api_view(['POST'])
@@ -196,9 +197,13 @@ class AnswerDetail(generics.RetrieveAPIView):
     serializer_class = AnswerSerializer
     
 
-class EventList(generics.ListCreateAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+
+class SurveyList(generics.ListCreateAPIView):
+    queryset = Survey.objects.all()
+    serializer_class = SurveySerializer
+class ConstituencyListCreate(generics.ListCreateAPIView):
+    queryset = Constituency.objects.all()
+    serializer_class = ConstituencySerializer
     
 # class CreateEvent(APIView):
 #     permission_classes = [IsAuthenticated]
@@ -229,3 +234,5 @@ class EventList(generics.ListCreateAPIView):
 #             print(event.meet_link)
 #             return Response({'meet_link': event.meet_link})
 #         return Response(serializer.errors)
+
+

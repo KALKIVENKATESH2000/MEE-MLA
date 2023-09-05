@@ -4,25 +4,24 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueValidator
 User = get_user_model()
 from django.contrib.auth.models import Permission
-from .models import Profile, CustomUser, MLA
+from .models import Profile, MLA
 
 
 # admin register serializer
 class AdminRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
-        fields = ['first_name', 'last_name', 'party_name', 'email', 'password']
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'password']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
     def create(self, validated_data):
-        superadmin = CustomUser(
+        superadmin = User(
             username=validated_data['email'],
             email=validated_data['email'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
-            party_name=validated_data['party_name'],
         )
         superadmin.set_password(validated_data['password'])
         superadmin.is_staff = True
@@ -49,7 +48,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ['first_name', 'last_name', 'email', 'password']
 
     def create(self, validated_data):
@@ -83,8 +82,8 @@ class LoginSerializer(serializers.Serializer):
     
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
-        fields = ['id','first_name', 'last_name', 'email', 'party_name']
+        model = User
+        fields = ['id','first_name', 'last_name', 'email', 'mla']
         
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

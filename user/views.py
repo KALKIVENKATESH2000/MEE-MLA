@@ -90,6 +90,7 @@ class UserProfileDetail(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         user = self.request.user
+        print(user.is_staff)
         user_profile, created = Profile.objects.get_or_create(user=self.request.user)
         user_profile.email = user.email
         user_profile.mla = user.is_staff

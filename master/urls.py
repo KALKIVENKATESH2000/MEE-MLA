@@ -32,7 +32,7 @@ urlpatterns = [
     path('surveys/<int:pk>/', SurveyDetail.as_view(), name='survey-detail'),
     path('questions/<int:pk>/', QuestionDetail.as_view(), name='question-detail'),
     path('answers/<int:pk>/', AnswerDetail.as_view(), name='answer-detail'),
-    
+    path('constituency/', ConstituencyListCreate.as_view(), name='constituency-list-create'),
     
     # path('events/', EventList.as_view(), name='event-list'),
     # path('create-meet/', CreateEvent.as_view(), name='create-meet'),
