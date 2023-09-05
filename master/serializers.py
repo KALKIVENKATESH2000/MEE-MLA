@@ -8,6 +8,9 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = "__all__"
         
+    def get_count(self, obj):
+        return obj.reports.count()
+        
 class ReportStatusSerializer(serializers.ModelSerializer):
  
     class Meta:

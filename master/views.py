@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http.response import JsonResponse
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event, Constituency
 from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer, ConstituencySerializer, ReportStatusSerializer
@@ -20,20 +20,47 @@ class ReportListCreateView(generics.ListCreateAPIView):
     serializer_class = ReportSerializer
 
     def get_queryset(self):
+        queryset = Report.objects.all()
         status = self.request.GET.get('status', None)
+        count = queryset.count()
+        self.count = count
         if status:
             return Report.objects.filter(status=status).order_by('-id')
         else:
             return Report.objects.all().order_by('-id')
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            'count': self.count,
+            'reports': serializer.data,
+        }
+        return Response(response_data)
         
     def perform_create(self, serializer):
         permission_classes = [IsAuthenticated]
         serializer.save(user=self.request.user)
         
+class ReportListCountView(APIView):
+    # queryset = Report.objects.all().order_by('-id')
+    # serializer_class = ReportSerializer
+    
+    # @action(details=False, method='[GET]')
+    def get(self, request):
+        count = Report.objects.count()
+        return Response({'count':count}, status=status.HTTP_200_OK)
+    
+# def report_count(request):
+#     count = Report.objects.count()
+#     return Response({'count':count})
+        
 class ReportRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     # permission_classes = [IsAuthenticated]
+
 
 @api_view(['PATCH', ])
 def report_status_update(request, id):

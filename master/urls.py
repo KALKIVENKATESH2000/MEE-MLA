@@ -17,6 +17,7 @@ urlpatterns = [
     path('reports/<int:pk>/', ReportRetrieveUpdateDeleteView.as_view(), name='report-retrieve-update-delete'),
     path('reports/user/', UserReportsView.as_view(), name='reports-by-user'),
     path('reports/<int:id>/status/', report_status_update, name='report-status-update'),
+    path('reports/count/', ReportListCountView.as_view(), name='reports-count'),
     path('posts/', PostListCreateView.as_view(), name='posts-list-create'),
     path('posts/<int:pk>/', PostRetrieveUpdateDeleteView.as_view(), name='post-retrieve-update-delete'),
     path('schemas/', SchemaListCreateView.as_view(), name='schemas-list-create'),
