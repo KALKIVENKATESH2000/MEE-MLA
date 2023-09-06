@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from user.models import CustomUser
 
 # Create your models here.
 REPORT_STATUS = (
@@ -27,7 +28,7 @@ def upload(instance, filename):
     return 'uploads/folder/{filename}'.format(filename=filename)
 
 class Report(models.Model):
-    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
+    user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
     full_name       = models.CharField(max_length=150)
     email           = models.CharField(max_length=50)
     mobile_no       = models.CharField(max_length=150)
@@ -51,11 +52,11 @@ class Report(models.Model):
         
         
 class Post(models.Model):
-    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
+    user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
     title           = models.TextField()
     image           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     video           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
-    tags            = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='tagged_in_posts', null=True,blank=True)
+    tags            = models.ManyToManyField(CustomUser, related_name='tagged_in_posts', null=True,blank=True)
     likes           = models.IntegerField(default=0)
     pincode         = models.CharField(max_length=50, null=True)
     city            = models.CharField(max_length=50, null=True)
@@ -71,7 +72,7 @@ class Post(models.Model):
         
         
 class PostLike(models.Model):
-    user                =   models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
+    user                =   models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True)
     post                =   models.ForeignKey(Post, on_delete=models.CASCADE)
     is_like             =   models.BooleanField(default=True)
     
@@ -81,7 +82,7 @@ class PostLike(models.Model):
         db_table = 'post_likes'
     
 class PostComment(models.Model):
-    user                =   models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True)
+    user                =   models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True)
     post                =   models.ForeignKey(Post, on_delete=models.CASCADE,related_name='comments')
     content             =   models.TextField()
     likes               =   models.PositiveIntegerField(default=0)
@@ -94,7 +95,7 @@ class PostComment(models.Model):
 
         
 class Scheme(models.Model):
-    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
+    user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
     title           = models.CharField(max_length=250)
     description     = models.TextField()
     tags            = models.CharField(max_length=50,null=True,blank=True)
@@ -113,7 +114,7 @@ class Scheme(models.Model):
         db_table = 'schemes'
         
 class Announcement(models.Model):
-    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
+    user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
     title           = models.CharField(max_length=100)
     description     = models.TextField()
     status          = models.CharField(max_length=20,choices=post_STATUS, default='Active')
@@ -139,7 +140,7 @@ class Choice(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='choices')
     text = models.CharField(max_length=100)
     votes = models.IntegerField(default=0)
-    voters = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    voters = models.ManyToManyField(CustomUser, blank=True)
 
     def __str__(self):
         return self.text
@@ -147,6 +148,12 @@ class Choice(models.Model):
     class Meta:
         db_table = 'poll_choices'
 
+class UserVote(models.Model):
+    user    = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    choice  = models.ForeignKey(Choice, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'choice')
 
 
 class Survey(models.Model):
@@ -194,7 +201,7 @@ def generate_meet_link(event):
     return f"{meet_domain}{meeting_code}"
 
 class Event(models.Model):
-    user            = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,null=True)
+    user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
     event_name = models.CharField(max_length=200)
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()

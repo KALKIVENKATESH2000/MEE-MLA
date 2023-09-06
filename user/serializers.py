@@ -4,22 +4,23 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueValidator
 User = get_user_model()
 from django.contrib.auth.models import Permission
-from .models import Profile, MLA
+from .models import Profile, MLA, CustomUser
 
 
 # admin register serializer
 class AdminRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'email', 'password']
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email', 'fcm_token', 'password']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
     def create(self, validated_data):
-        superadmin = User(
+        superadmin = CustomUser(
             username=validated_data['email'],
             email=validated_data['email'],
+            fcm_token=validated_data['fcm_token'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
         )
@@ -46,15 +47,17 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
+    # fcm_token = serializers.CharField(write_only=True)
 
     class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'email', 'password']
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email', 'password', 'fcm_token']
 
     def create(self, validated_data):
-        user = User.objects.create(
+        user = CustomUser.objects.create(
             username=validated_data['email'],
             email=validated_data['email'],
+            fcm_token=validated_data['fcm_token'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
         )
@@ -67,7 +70,7 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = User.objects.filter(email=data['email']).first()
+        user = CustomUser.objects.filter(email=data['email']).first()
         if user and user.check_password(data['password']):
             refresh = RefreshToken.for_user(user)
             return {'success':'User loggedin sucessfully..',
@@ -82,7 +85,7 @@ class LoginSerializer(serializers.Serializer):
     
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['id','first_name', 'last_name', 'email', 'mla']
         
 class ProfileSerializer(serializers.ModelSerializer):

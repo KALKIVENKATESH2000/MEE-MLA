@@ -76,7 +76,7 @@ class PollSerializer(serializers.ModelSerializer):
         return poll
     
     def update(self, instance, validated_data):
-        choices_data = validated_data.pop('product_measerments')
+        choices_data = validated_data.pop('choices')
         chioces = instance.choices.all()
         chioces = list(chioces)
         instance.question = validated_data.get('question', instance.question)

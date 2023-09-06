@@ -11,15 +11,15 @@ from django.conf import settings
 def upload(instance, filename):
     return 'uploads/users/{filename}'.format(filename=filename)
 
-# class CustomUser(AbstractUser):
-#     email           = models.EmailField(verbose_name="Email", null=True, unique=True, max_length=250)
-#     party_name      = models.CharField(max_length=100)
+class CustomUser(AbstractUser):
+    email          = models.EmailField(verbose_name="Email", null=True, unique=True, max_length=250)
+    fcm_token      = models.CharField(max_length=100, null=True)
     
-#     USERNAME_FIELD  = 'email'
-#     REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD  = 'email'
+    REQUIRED_FIELDS = ['username']
 
-#     def __str__(self):
-#         return self.first_name + " " + self.last_name
+    def __str__(self):
+        return self.first_name + " " + self.last_name
 
 
 
@@ -30,7 +30,7 @@ GENDER_CHOICES = (
 )
 
 class Profile(models.Model):
-    user        = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, null=True)
+    user        = models.OneToOneField(CustomUser,on_delete=models.CASCADE, null=True)
     mla         = models.BooleanField(null=True)
     full_name   = models.CharField(max_length=50, blank=True, null=True)
     constituency= models.CharField(max_length=50, blank=True, null=True)
@@ -46,7 +46,7 @@ class Profile(models.Model):
     
     
 class MLA(models.Model):
-    user        = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, null=True)
+    user        = models.OneToOneField(CustomUser,on_delete=models.CASCADE, null=True)
     full_name   = models.CharField(max_length=50, blank=True, null=True)
     constituency= models.CharField(max_length=50, blank=True, null=True)
     email       = models.CharField(max_length=50, blank=True, null=True)

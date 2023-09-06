@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
-from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event, Constituency
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice,UserVote, Survey, Question, Answer, Event, Constituency
 from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer, ConstituencySerializer, ReportStatusSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -228,12 +228,22 @@ class VoteView(generics.UpdateAPIView):
         choice = self.get_object()
         user = request.user
 
-        if user in choice.voters.all():
+        if UserVote.objects.filter(user=user, choice=choice).exists():
             raise PermissionDenied("You have already voted for this choice.")
+        
+        if UserVote.objects.filter(user=user, choice__poll=choice.poll).exists():
+            raise PermissionDenied("You can only vote for one choice in this poll.")
+        # if user in choice.voters.all():
+        #     raise PermissionDenied("You have already voted for this choice.")
+        
+        # if user.choices.filter(poll=choice.poll).exists():
+        #     raise PermissionDenied("You can only vote for one choice in this poll.")
 
         choice.votes += 1
         choice.voters.add(user)
         choice.save()
+        
+        UserVote.objects.create(user=user, choice=choice)
         
         return Response({"message": "Vote recorded successfully"}, status=status.HTTP_200_OK)
 
