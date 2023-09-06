@@ -77,18 +77,27 @@ class ReportRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 def report_status_update(request, id):
     try:
         report = Report.objects.get(id=id)
-    except:
+    except Report.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
     serializer = ReportStatusSerializer(report, data=request.data)
-    message={}
     if serializer.is_valid():
-        if serializer.data.status == 'solved':
-            serializer.data.mla_response = "Dear Sir/Madam, Your reported problem is solved."
+        new_status = serializer.validated_data.get('status')
+        
+        response_messages = {
+            'solved': "Dear Sir/Madam, Your reported problem is solved.",
+            'pending': "Dear Sir/Madam, Your reported problem is currently in progress.",
+            'failed': "Dear Sir/Madam, Your reported problem is failed.",
+        }
+
+        serializer.validated_data['mla_response'] = response_messages.get(new_status, "")
+
         serializer.save()
-        print(serializer.data)
-        message["success"]="Update Successful"
-        return Response({"message": message, "data":serializer.data}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        message = {"success": "Update Successful"}
+        return Response({"message": message, "data": serializer.data}, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserReportsView(generics.ListAPIView):
     serializer_class = ReportSerializer

@@ -94,7 +94,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Profile
-        fields = ['user', 'email', 'full_name','phone', 'gender','constituency', 'image']
+        fields = ['user', 'email', 'full_name','phone', 'gender','constituency', 'image', 'fcm_token']
         
 class MLASerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
