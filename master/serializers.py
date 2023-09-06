@@ -59,7 +59,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ['id', 'text', 'votes']
+        fields = ['id', 'text', 'votes', 'voters']
 
 class PollSerializer(serializers.ModelSerializer):
     choices = ChoiceSerializer(many=True)

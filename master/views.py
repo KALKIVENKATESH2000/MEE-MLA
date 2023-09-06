@@ -49,8 +49,18 @@ class ReportListCountView(APIView):
     
     # @action(details=False, method='[GET]')
     def get(self, request):
-        count = Report.objects.count()
-        return Response({'count':count}, status=status.HTTP_200_OK)
+        total_reports = Report.objects.count()
+        pending_reports = Report.objects.filter(status='pending').count()
+        solved_reports = Report.objects.filter(status='solved').count()
+        failed_reports = Report.objects.filter(status='failed').count()
+        response_data = {
+            'total_reports':total_reports,
+            'pending_reports':pending_reports,
+            'solved_reports':solved_reports,
+            'failed_reports':failed_reports
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
     
 # def report_count(request):
 #     count = Report.objects.count()

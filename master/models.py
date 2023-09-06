@@ -8,6 +8,13 @@ REPORT_STATUS = (
     ("solved", "Solved"),
 )
 
+REPORT_PRIORITY = (
+    ("low", "Low"),
+    ("normal", "Normal"),
+    ("high", "High"),
+    ("urgent", "Urgent"),
+)
+
 post_STATUS = (
     ("Active", "Active"),
     ("Inactive", "Inactive"),
@@ -29,7 +36,9 @@ class Report(models.Model):
     state           = models.CharField(max_length=50)
     address         = models.TextField()
     report          = models.TextField()
-    image           = models.FileField(upload_to='uploads/reports',null=True,blank=True)
+    report_image    = models.FileField(upload_to='uploads/reports',null=True,blank=True)
+    reporter_selfie = models.FileField(upload_to='uploads/reports',null=True,blank=True)
+    priority        = models.CharField(max_length=20,choices=REPORT_PRIORITY, default='normal')
     status          = models.CharField(max_length=20,choices=REPORT_STATUS, default='pending')
     createdAt       = models.DateTimeField(auto_now_add=True)
     updatedAt       = models.DateTimeField(auto_now=True)
