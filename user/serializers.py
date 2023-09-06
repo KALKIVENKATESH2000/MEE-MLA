@@ -11,7 +11,7 @@ from .models import Profile, MLA, CustomUser
 class AdminRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'fcm_token', 'password']
+        fields = ['first_name', 'last_name', 'email', 'password']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -20,7 +20,7 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         superadmin = CustomUser(
             username=validated_data['email'],
             email=validated_data['email'],
-            fcm_token=validated_data['fcm_token'],
+            # fcm_token=validated_data['fcm_token'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
         )
@@ -51,13 +51,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'password', 'fcm_token']
+        fields = ['first_name', 'last_name', 'email', 'password']
 
     def create(self, validated_data):
         user = CustomUser.objects.create(
             username=validated_data['email'],
             email=validated_data['email'],
-            fcm_token=validated_data['fcm_token'],
+            # fcm_token=validated_data['fcm_token'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
         )

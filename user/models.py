@@ -32,6 +32,7 @@ GENDER_CHOICES = (
 class Profile(models.Model):
     user        = models.OneToOneField(CustomUser,on_delete=models.CASCADE, null=True)
     mla         = models.BooleanField(null=True)
+    fcm_token   = models.CharField(max_length=100, null=True)
     full_name   = models.CharField(max_length=50, blank=True, null=True)
     constituency= models.CharField(max_length=50, blank=True, null=True)
     email       = models.CharField(max_length=50, blank=True, null=True)
