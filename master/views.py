@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from django.http.response import JsonResponse
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
@@ -81,6 +82,8 @@ def report_status_update(request, id):
     serializer = ReportStatusSerializer(report, data=request.data)
     message={}
     if serializer.is_valid():
+        if serializer.data.status == 'solved':
+            serializer.data.mla_response = "Dear Sir/Madam, Your reported problem is solved."
         serializer.save()
         print(serializer.data)
         message["success"]="Update Successful"
@@ -167,7 +170,15 @@ def like_post(request, post_id):
     post.save()
     serializer = PostSerializer(post)
     return Response({"message": message, "data":serializer.data}, status=status.HTTP_201_CREATED)
+
+from django.contrib.auth.decorators import login_required
+
+class UserLikedPostsView(generics.ListAPIView):
+    serializer_class = postLikeSerializer
+    permission_classes = [IsAuthenticated]       
     
+    def get_queryset(self):
+        return PostLike.objects.filter(user=self.request.user).order_by('-id')
 
 
 @api_view(['POST'])

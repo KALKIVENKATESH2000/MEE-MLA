@@ -41,6 +41,7 @@ class Report(models.Model):
     reporter_selfie = models.FileField(upload_to='uploads/reports',null=True,blank=True)
     priority        = models.CharField(max_length=20,choices=REPORT_PRIORITY, default='normal')
     status          = models.CharField(max_length=20,choices=REPORT_STATUS, default='pending')
+    mla_response    = models.CharField(max_length=150, null=True)
     createdAt       = models.DateTimeField(auto_now_add=True)
     updatedAt       = models.DateTimeField(auto_now=True)
 

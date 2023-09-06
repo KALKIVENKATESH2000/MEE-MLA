@@ -23,6 +23,7 @@ urlpatterns = [
     path('schemas/', SchemaListCreateView.as_view(), name='schemas-list-create'),
     path('schemas/<int:pk>/', SchemaRetrieveUpdateDeleteView.as_view(), name='schema-retrieve-update-delete'),
     path('posts/<int:post_id>/like/', like_post, name='like-post'),
+    path('posts/user_liked', UserLikedPostsView.as_view(), name='like-status'),
     path('posts/<int:post_id>/comments/', create_comment, name='create-comment'),
     path('annocements/', AnnouncementListCreateView.as_view(), name='annocements-list-create'),
     path('annocements/<int:pk>/', AnnouncementRetrieveUpdateDeleteView.as_view(), name='annocements-retrieve-update-delete'),

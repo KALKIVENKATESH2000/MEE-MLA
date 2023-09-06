@@ -15,7 +15,7 @@ class ReportStatusSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = Report
-        fields = ['status']
+        fields = ['status', 'mla_response']
         
 class PostCommentSerializer(serializers.ModelSerializer):
     class Meta:
