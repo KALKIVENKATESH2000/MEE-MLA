@@ -55,6 +55,7 @@ class Report(models.Model):
 class Post(models.Model):
     user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
     title           = models.TextField()
+    description     = models.TextField(null=True,blank=True)
     image           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     video           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     tags            = models.ManyToManyField(CustomUser, related_name='tagged_in_posts', null=True,blank=True)
