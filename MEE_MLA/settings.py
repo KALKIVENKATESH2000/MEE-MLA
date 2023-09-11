@@ -139,7 +139,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mee_mla',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': 'mee_mla',
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -166,8 +166,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 AUTH_USER_MODEL = "user.CustomUser"
-
-AUTH_PROFILE_MODULE = 'user.Profile'
 
 
 # Internationalization
