@@ -11,6 +11,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from user.permissions import IsRegularUser, IsSuperuser
+from user.models import Profile
+import requests
+
 # Create your views here.
 
 
@@ -74,9 +77,13 @@ class ReportRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['PATCH', ])
+@permission_classes([IsAuthenticated])
 def report_status_update(request, id):
     try:
         report = Report.objects.get(id=id)
+        report_user = report.user
+        user_fcm = Profile.objects.get(user=report.user)
+        print(user_fcm.fcm_token)
     except Report.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -94,6 +101,30 @@ def report_status_update(request, id):
 
         serializer.save()
         message = {"success": "Update Successful"}
+        
+        # Send a notification using FCM with your FCM authorization key
+        fcm_api_key = 'AAAAg_vupFQ:APA91bGe8g4QJJhSLVidujCJxlhu5IXZNraltSq8Z5wPoEhWC2k5GWkm6YlBj-CagpBNp09i8phsFf96WxnkD3-d2M2Q8LuLfbNLAir5xU52WHh9GfDNHxjBIQSfqm0ezwaWDYwf1muX'
+        fcm_endpoint = 'https://fcm.googleapis.com/fcm/send'
+        
+        headers = {
+            'Authorization': f'key={fcm_api_key}',
+            'Content-Type': 'application/json',
+        }
+
+        # Create a notification payload
+        notification_payload = {
+            'to': user_fcm.fcm_token,
+            'notification': {
+                'title': 'Notification Title',
+                'body': 'Notification Body',
+            },
+            'data': {
+            },
+        }
+
+        # Send the notification
+        response = requests.post(fcm_endpoint, json=notification_payload, headers=headers)
+        
         return Response({"message": message, "data": serializer.data}, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
