@@ -8,10 +8,10 @@ from .models import Profile, MLA, CustomUser
 
 
 # admin register serializer
-class AdminRegistrationSerializer(serializers.ModelSerializer):
+class SuperAdminRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'password']
+        fields = ['first_name', 'last_name', 'email', 'password', 'roles']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -20,46 +20,62 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         superadmin = CustomUser(
             username=validated_data['email'],
             email=validated_data['email'],
-            # fcm_token=validated_data['fcm_token'],
+            # roles=validated_data['roles'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
         )
         superadmin.set_password(validated_data['password'])
         superadmin.is_staff = True
-        # superadmin.is_superuser = True
-        # add_permission = Permission.objects.get(name='Can add question')
-        # view_permission = Permission.objects.get(name='Can view question')
-        # change_permission = Permission.objects.get(name='Can change question')
-        # delete_permission = Permission.objects.get(name='Can delete question')
-        # view_answer = Permission.objects.get(name='Can view answer')
+        superadmin.is_superuser = True
+        superadmin.roles = 'superadmin'
 
         superadmin.save()
-        # superadmin.user_permissions.add(
-        #     add_permission,
-        #     view_permission,
-        #     change_permission,
-        #     delete_permission,
-        #     view_answer
-        # )
         return superadmin
+    
+    
+class AdminRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'phone', 'email', 'password', 'roles', 'constituency']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        admin = CustomUser(
+            username=validated_data['email'],
+            email=validated_data['email'],
+            phone=validated_data['phone'],
+            constituency=validated_data['constituency'],
+            roles=validated_data['roles'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+        )
+        admin.set_password(validated_data['password'])
+        admin.is_staff = True
+        admin.roles = 'admin'
+
+        admin.save()
+        return admin
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
+class AgentRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
-    # fcm_token = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'password']
+        fields = ['first_name', 'last_name', 'phone', 'email', 'password', 'roles', 'polling_station']
 
     def create(self, validated_data):
         user = CustomUser.objects.create(
             username=validated_data['email'],
             email=validated_data['email'],
-            # fcm_token=validated_data['fcm_token'],
+            phone=validated_data['phone'],
+            polling_station=validated_data['polling_station'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
+            roles=validated_data['roles'],
         )
         user.set_password(validated_data['password'])
         user.save()

@@ -1,5 +1,5 @@
 from rest_framework import serializers 
-from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Event, Constituency
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice, Survey, Question, Answer, Voter
 from user.serializers import UserSerializer,ProfileSerializer
  
 class ReportSerializer(serializers.ModelSerializer):
@@ -123,13 +123,14 @@ class SurveySerializer(serializers.Serializer):
 
 
 
-class EventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Event
-        fields = ['id', 'event_name', 'start_datetime', 'end_datetime', 'description']
+# class EventSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Event
+#         fields = ['id', 'event_name', 'start_datetime', 'end_datetime', 'description']
         
         
-class ConstituencySerializer(serializers.ModelSerializer):
+
+class VoterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Constituency
-        fields = "__all__"
+        model = Voter
+        fields = '__all__'

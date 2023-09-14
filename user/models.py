@@ -2,24 +2,37 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import User
 from django.conf import settings
+from api.models import Constituency, PollingStation
 
 
 
 # Create your models here.
-
+ROLES = (
+    ('superadmin', 'superadmin'),
+    ('admin', 'admin'),
+    ('agent', 'agent'),
+)
 
 def upload(instance, filename):
     return 'uploads/users/{filename}'.format(filename=filename)
 
 class CustomUser(AbstractUser):
-    email          = models.EmailField(verbose_name="Email", null=True, unique=True, max_length=250)
-    fcm_token      = models.CharField(max_length=250, null=True)
+    email               = models.EmailField(verbose_name="Email", null=True, unique=True, max_length=250)
+    fcm_token           = models.CharField(max_length=250, null=True)
+    phone               = models.CharField(max_length=15,  blank=True, null=True)
+    roles               = models.CharField(max_length=50, choices=ROLES, null=True)
+    constituency        = models.ForeignKey(Constituency,on_delete=models.CASCADE, null=True)
+    polling_station     = models.ForeignKey(PollingStation,on_delete=models.CASCADE, null=True)
+
     
     USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.first_name + " " + self.last_name
+    
+    class Meta:
+        db_table = 'users'
 
 
 
@@ -45,6 +58,9 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
     
+    class Meta:
+        db_table = 'profiles'
+    
     
 class MLA(models.Model):
     user        = models.OneToOneField(CustomUser,on_delete=models.CASCADE, null=True)
@@ -58,3 +74,6 @@ class MLA(models.Model):
     
     def __str__(self):
         return self.user.username
+    
+    class Meta:
+        db_table = 'mlas'

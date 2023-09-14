@@ -5,41 +5,66 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser 
 from rest_framework import status, viewsets
 from rest_framework.views import APIView
-from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice,UserVote, Survey, Question, Answer, Event, Constituency
-from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer,EventSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer, ConstituencySerializer, ReportStatusSerializer
+from .models import Report, Post, Scheme, PostLike, PostComment, Announcement, Poll, Choice,UserVote, Survey, Question, Answer, Voter
+from .serializers import ReportSerializer,postLikeSerializer,SchemeSerializer,PostSerializer, PostCommentSerializer, AnnouncementSerializer, PollSerializer, ChoiceSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer, ReportStatusSerializer,VoterSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from user.permissions import IsRegularUser, IsSuperuser
 from user.models import Profile
 import requests
+from rest_framework import generics
+import pandas as pd
+from tablib import Dataset
+from rest_framework.parsers import FileUploadParser,MultiPartParser
+
+
 
 # Create your views here.
 
+        
+from import_export import resources
 
-from rest_framework import generics
+class VoterResource(resources.ModelResource):
 
+    class Meta:
+        model = Voter
+        import_id_fields = ["booth_no", "voterId_no"]
+        skip_unchanged = True
+        use_bulk = True
+        
+        
 class ReportListCreateView(generics.ListCreateAPIView):
     queryset = Report.objects.all().order_by('-id')
     serializer_class = ReportSerializer
-
-    def get_queryset(self):
-        queryset = Report.objects.all()
-        status = self.request.GET.get('status', None)
-        count = queryset.count()
-        self.count = count
-        if status:
-            return Report.objects.filter(status=status).order_by('-id')
-        else:
-            return Report.objects.all().order_by('-id')
-        return queryset
+    
+    # def get_queryset(self):
+    #     queryset = Report.objects.all()
+    #     status = self.request.GET.get('status', None)
+    #     count = queryset.count()
+    #     self.count = count
+    #     if status:
+    #         return Report.objects.filter(status=status).order_by('-id')
+    #     else:
+    #         return Report.objects.all().order_by('-id')
+    #     return queryset
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+        permission_classes = [IsAuthenticated]
+        user = request.user
+        admin_constituency = user.profile.constituency
+        user_profiles = Profile.objects.filter(constituency=admin_constituency)
+        print(user_profiles)
+        user_ids = user_profiles.values_list('user__id', flat=True)
+        print('user_ids', user_ids)
+        user_reports = Report.objects.filter(user__id__in=user_ids)
+        user_reports_serializer = ReportSerializer(user_reports, many=True)
+
+        # queryset = self.get_queryset()
+        # serializer = self.get_serializer(queryset, many=True)
         response_data = {
-            'count': self.count,
-            'reports': serializer.data,
+            # 'count': self.count,
+            'reports': user_reports_serializer.data,
         }
         return Response(response_data)
         
@@ -48,10 +73,7 @@ class ReportListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
         
 class ReportListCountView(APIView):
-    # queryset = Report.objects.all().order_by('-id')
-    # serializer_class = ReportSerializer
     
-    # @action(details=False, method='[GET]')
     def get(self, request):
         total_reports = Report.objects.count()
         pending_reports = Report.objects.filter(status='pending').count()
@@ -115,8 +137,8 @@ def report_status_update(request, id):
         notification_payload = {
             'to': user_fcm.fcm_token,
             'notification': {
-                'title': 'Notification Title',
-                'body': 'Notification Body',
+                'title': 'Report status',
+                'body': serializer.data['mla_response'],
             },
             'data': {
             },
@@ -316,39 +338,59 @@ class AnswerDetail(generics.RetrieveAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
     
+
     
-class ConstituencyListCreate(generics.ListCreateAPIView):
-    queryset = Constituency.objects.all().order_by('-id')
-    serializer_class = ConstituencySerializer
+
+
+class VoterUploadView(APIView):
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request):
+        uploaded_file = request.data.get('file')
+        polling_station = request.data.get('polling_station')
+
+        if not uploaded_file.name.endswith('.xlsx'):
+            return Response({'message': 'Invalid file format. Please upload an Excel file.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            df = pd.read_excel(uploaded_file, engine='openpyxl')
+
+            column_mapping = {"Booth No": "booth_no", "Sno": "sl_no","VoterName": "name","Surname": "surname","Address": "address","Voter Id Number": "voterId_no"}
+
+            df.rename(columns=column_mapping, inplace=True)
+            
+            df['polling_station'] = polling_station
+
+            data_to_import = df.to_dict(orient='records')
+            serializer = VoterSerializer(data=data_to_import, many=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'Data from Excel file imported successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'message': f'Error processing Excel file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+class VoterListCreate(generics.ListCreateAPIView):
+    queryset = Voter.objects.all()
+    serializer_class = VoterSerializer
     
-# class CreateEvent(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request, format=None):
-#         serializer = EventSerializer(data=request.data)
-#         if serializer.is_valid():
-#             print("kkkkkkkkkkkkkkkkkkkkkkkk",serializer)
-#             event = serializer.save(user=request.user)
-
-#             access_token = request.data.get('access_token')  # Get the user's access token
-
-#             service = build('calendar', 'v3', access_token=access_token)
-
-#             event_result = service.events().insert(
-#                 calendarId='primary',  # Change to the desired calendar ID
-#                 body={
-#                     'summary': event.event_name,
-#                     'description': event.description,
-#                     'start': {'dateTime': event.start_datetime.isoformat()},
-#                     'end': {'dateTime': event.end_datetime.isoformat()},
-#                     'conferenceData': {'createRequest': {'requestId': 'meet'}}
-#                 }
-#             ).execute()
-
-#             event.meet_link = event_result.get('conferenceData', {}).get('entryPoints', [])[0].get('uri')
-#             event.save()
-#             print(event.meet_link)
-#             return Response({'meet_link': event.meet_link})
-#         return Response(serializer.errors)
-
-
+    def get_queryset(self):
+        queryset = Voter.objects.all()
+        voterId = self.request.GET.get('voter_id', None)
+        voterName = self.request.GET.get('name', None)
+        if voterId:
+            return Voter.objects.filter(voterId_no__icontains=voterId)
+        elif voterName:
+            return Voter.objects.filter(name__icontains=voterName)
+        else:
+            return Voter.objects.all()
+        return queryset
+    
+class VoterRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Voter.objects.all()
+    serializer_class = VoterSerializer
+    # permission_classes = [IsAuthenticated]

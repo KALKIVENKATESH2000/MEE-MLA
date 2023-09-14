@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from user.models import CustomUser
+from api.models import PollingStation
 
 # Create your models here.
 REPORT_STATUS = (
@@ -58,7 +59,7 @@ class Post(models.Model):
     description     = models.TextField(null=True,blank=True)
     image           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
     video           = models.FileField(upload_to='uploads/posts',null=True,blank=True)
-    tags            = models.ManyToManyField(CustomUser, related_name='tagged_in_posts', null=True,blank=True)
+    tags            = models.ManyToManyField(CustomUser, related_name='tagged_in_posts',blank=True)
     likes           = models.IntegerField(default=0)
     pincode         = models.CharField(max_length=50, null=True)
     city            = models.CharField(max_length=50, null=True)
@@ -187,39 +188,49 @@ class Answer(models.Model):
         db_table = 'survey_answers'
 
 
-def generate_meet_link(event):
-    meet_domain = "https://meet.google.com/"
-    
-    event_name_slug = event.event_name.replace(" ", "-").lower()
-    # Format the start and end times properly
-    start_time = event.start_datetime.strftime("%Y%m%dT%H%M%S")
-    end_time = event.end_datetime.strftime("%Y%m%dT%H%M%S")
-    
-    # Remove any non-alphanumeric characters from the slug
-    sanitized_event_name_slug = ''.join(c for c in event_name_slug if c.isalnum() or c == '-')
-    
-    meeting_code = f"{sanitized_event_name_slug}-{start_time}-{end_time}"
-    
-    return f"{meet_domain}{meeting_code}"
+# class Event(models.Model):
+#     user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
+#     event_name = models.CharField(max_length=200)
+#     start_datetime = models.DateTimeField()
+#     end_datetime = models.DateTimeField()
+#     description = models.TextField()
+#     meet_link = models.URLField(blank=True, null=True)  # Google Meet link
 
-class Event(models.Model):
-    user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
-    event_name = models.CharField(max_length=200)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
-    description = models.TextField()
-    meet_link = models.URLField(blank=True, null=True)  # Google Meet link
+#     def __str__(self):
+#         return self.event_name
+    
+#     def save(self, *args, **kwargs):
+#         if not self.meet_link:
+#             self.meet_link = generate_meet_link(self)
+#         super().save(*args, **kwargs)
+    
+    
+
+class Voter(models.Model):
+    # user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
+    polling_station = models.ForeignKey(PollingStation,on_delete=models.SET_NULL,null=True)
+    booth_no        = models.IntegerField()
+    sl_no           = models.IntegerField()
+    name            = models.CharField(max_length=50)
+    surname         = models.CharField(max_length=50)
+    address         = models.CharField(max_length=100)
+    voterId_no      = models.CharField(max_length=50,null=True)
+    caste           = models.CharField(max_length=50, null=True)
+    mobile          = models.CharField(max_length=50, null=True)
+    occupation      = models.CharField(max_length=50, null=True)
+    resident        = models.CharField(max_length=20, null=True)
+    party           = models.CharField(max_length=20, null=True)
+    joint_family    = models.BooleanField(max_length=10,null=True)
+    benificers      = models.CharField(max_length=120, null=True)
+    partNameEn      = models.CharField(max_length=100, null=True)
+    image           = models.FileField(upload_to='uploads/voter',null=True,blank=True)
+    latitude        = models.CharField(max_length=50, null=True,blank=True)
+    longitude       = models.CharField(max_length=50,null=True,blank=True)
+    createdAt       = models.DateTimeField(auto_now_add=True)
+    updatedAt       = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.event_name
-    
-    def save(self, *args, **kwargs):
-        if not self.meet_link:
-            self.meet_link = generate_meet_link(self)
-        super().save(*args, **kwargs)
-
-class Constituency(models.Model):
-    name = models.CharField(max_length=200)
-
-    def __str__(self):
-        return self.name
+        return f"{self.name} {self.surname}"
+    class Meta:
+        db_table = 'voters'
+        

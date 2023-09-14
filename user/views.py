@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import RegistrationSerializer, LoginSerializer,UserSerializer, ProfileSerializer,AdminRegistrationSerializer
+from .serializers import AgentRegistrationSerializer,AdminRegistrationSerializer, LoginSerializer,UserSerializer, ProfileSerializer,SuperAdminRegistrationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import generics, status
@@ -12,6 +12,24 @@ from .models import Profile
 
 # Create your views here.
 
+class SuperAdminRegistrationView(APIView):
+    serializer_class = SuperAdminRegistrationSerializer
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            admin = serializer.save()
+            refresh = RefreshToken.for_user(admin)
+
+            responce_data = {
+                'success':'SuperAdmin registerd sucessfully..',
+                'superadmin': serializer.data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+
+            return Response(responce_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class AdminRegistrationView(APIView):
     serializer_class = AdminRegistrationSerializer
     def post(self, request):
@@ -31,8 +49,8 @@ class AdminRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
-class RegistrationView(APIView):
-    serializer_class = RegistrationSerializer
+class AgentRegistrationView(APIView):
+    serializer_class = AgentRegistrationSerializer
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -40,8 +58,8 @@ class RegistrationView(APIView):
             refresh = RefreshToken.for_user(user)
 
             responce_data = {
-                'success':'User registerd sucessfully..',
-                'user': serializer.data,
+                'success':'Agent registerd sucessfully..',
+                'agent': serializer.data,
                 'refresh': str(refresh),
                 'access': str(refresh.access_token)
             }
@@ -81,6 +99,7 @@ class UserDetail(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_object(self):
+        print(self.request.user.roles)
         return self.request.user
     
     
