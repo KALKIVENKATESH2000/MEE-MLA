@@ -47,6 +47,7 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             phone=validated_data['phone'],
             constituency=validated_data['constituency'],
+            # polling_station=validated_data['polling_station'],
             roles=validated_data['roles'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
@@ -61,17 +62,19 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
 
 class AgentRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    phone = serializers.IntegerField(write_only=True)
     email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'phone', 'email', 'password', 'roles', 'polling_station']
+        fields = ['first_name', 'last_name', 'phone', 'email', 'password', 'roles', 'constituency', 'polling_station']
 
     def create(self, validated_data):
         user = CustomUser.objects.create(
-            username=validated_data['email'],
+            username=validated_data['phone'],
             email=validated_data['email'],
             phone=validated_data['phone'],
+            constituency=validated_data['constituency'],
             polling_station=validated_data['polling_station'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
@@ -82,16 +85,20 @@ class AgentRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    # email = serializers.EmailField()
+    phone = serializers.IntegerField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = CustomUser.objects.filter(email=data['email']).first()
+        user = CustomUser.objects.filter(phone=data['phone']).first()
         if user and user.check_password(data['password']):
             refresh = RefreshToken.for_user(user)
             return {'success':'User loggedin sucessfully..',
                     'id': user.id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
                     'email': user.email,
+                    'phone': user.phone,
                     'username': user.username,
                     'access': str(refresh.access_token),
                     'refresh': str(refresh)
@@ -102,7 +109,7 @@ class LoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id','first_name', 'last_name', 'email', 'mla']
+        fields = ['id','first_name', 'last_name', 'email', 'phone', 'mla']
         
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
