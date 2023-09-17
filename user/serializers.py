@@ -70,18 +70,24 @@ class AgentRegistrationSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'phone', 'email', 'password', 'roles', 'constituency', 'polling_station']
 
     def create(self, validated_data):
+        
+        polling_station = validated_data.pop('polling_station')
+        
         user = CustomUser.objects.create(
             username=validated_data['phone'],
             email=validated_data['email'],
             phone=validated_data['phone'],
             constituency=validated_data['constituency'],
-            polling_station=validated_data['polling_station'],
+            # polling_station=validated_data['polling_station'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             roles=validated_data['roles'],
         )
         user.set_password(validated_data['password'])
         user.save()
+        
+        polling_station.user.add(user)
+        
         return user
 
 class LoginSerializer(serializers.Serializer):

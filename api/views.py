@@ -34,13 +34,15 @@ class AgentVotersByPollingStation(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        admin_user = request.user
-        polling_station = admin_user.polling_station
+        agent_user = request.user
+        polling_station = agent_user.polling_station
+        constituency = agent_user.constituency.name
         if polling_station:
             voters = Voter.objects.filter(polling_station=polling_station)
+            voters_count = voters.count()
             # voters_data = [{'id': voter.id,'name': voter.name, 'surname': voter.surname, 'address': voter.address} for voter in voters]
             serializer = VoterSerializer(voters, many=True)
-            return JsonResponse({'polling_station': polling_station.name, 'voters_data': serializer.data})
+            return JsonResponse({'constituency':constituency, 'polling_station': polling_station.name, 'locations':polling_station.location,'voters':voters_count, 'voters_data': serializer.data})
         else:
             return JsonResponse({'error': 'Admin user is not assigned to a polling station'}, status=400)
 
@@ -72,3 +74,12 @@ class VotersByPollingStation(generics.ListAPIView):
         polling_station = self.kwargs['pk']
 
         return Voter.objects.filter(polling_station=polling_station)
+    
+class AgentVoter(generics.ListAPIView):
+    serializer_class = VoterSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        agent = self.request.user.polling_station
+        print(agent)
+        return Voter.objects.filter(polling_station=agent)

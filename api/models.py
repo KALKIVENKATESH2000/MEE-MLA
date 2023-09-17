@@ -1,4 +1,7 @@
 from django.db import models
+# from user.models import Profile, CustomUser
+from django.contrib.auth.models import User
+from django.conf import settings
 
 # Create your models here.
 
@@ -37,6 +40,7 @@ class PollingStation(models.Model):
     no              = models.IntegerField(null=True)
     name            = models.CharField(max_length=150)
     location        = models.CharField(max_length=200, null=True)
+    user           = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='polling_stations', blank=True)
 
     def __str__(self):
         return self.name
