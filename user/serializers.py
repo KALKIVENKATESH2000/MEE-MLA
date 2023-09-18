@@ -5,6 +5,7 @@ from rest_framework.validators import UniqueValidator
 User = get_user_model()
 from django.contrib.auth.models import Permission
 from .models import Profile, MLA, CustomUser
+from api.models import PollingStation
 
 
 # admin register serializer
@@ -62,6 +63,7 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
 
 class AgentRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    polling_station = serializers.CharField(write_only=True)
     phone = serializers.IntegerField(write_only=True)
     email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
 
@@ -72,6 +74,7 @@ class AgentRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         
         polling_station = validated_data.pop('polling_station')
+        print(polling_station)
         
         user = CustomUser.objects.create(
             username=validated_data['phone'],
@@ -84,8 +87,11 @@ class AgentRegistrationSerializer(serializers.ModelSerializer):
             roles=validated_data['roles'],
         )
         user.set_password(validated_data['password'])
+        polling_station = PollingStation.objects.get(id=polling_station)
+        user.polling_station = polling_station
         user.save()
         
+
         polling_station.user.add(user)
         
         return user
