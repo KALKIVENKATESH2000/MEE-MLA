@@ -221,7 +221,7 @@ class Voter(models.Model):
     mobile          = models.CharField(max_length=50, null=True)
     occupation      = models.CharField(max_length=50, null=True)
     resident        = models.CharField(max_length=20, null=True)
-    party           = models.CharField(max_length=20, null=True)
+    party           = models.CharField(max_length=50, null=True)
     joint_family    = models.BooleanField(max_length=10,null=True)
     benificers      = models.CharField(max_length=120, null=True)
     remarks         = models.CharField(max_length=200, null=True)
