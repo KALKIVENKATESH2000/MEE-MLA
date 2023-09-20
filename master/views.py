@@ -19,6 +19,8 @@ from tablib import Dataset
 from rest_framework.parsers import FileUploadParser,MultiPartParser
 from openpyxl import Workbook
 from django.http import HttpResponse, FileResponse
+from api.models import PollingStation
+import xlwt
 
 
 # Create your views here.
@@ -375,32 +377,55 @@ class VoterUploadView(APIView):
             return Response({'message': f'Error processing Excel file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
         
    
-from django.conf import settings
-import os
-class VotersListDownloadView(APIView):
-    def get(self, request):
-        data = Voter.objects.filter(is_updated=True)
-        print(data)
-        wb = Workbook()
-        ws = wb.active
+# class VotersListDownloadView(APIView):
+    
+#     def get(self, request):
+#         # polling_station = request.data.get('polling_station')
+#         data = Voter.objects.filter(is_updated=True)
+#         print(data)
+#         wb = Workbook()
+#         ws = wb.active
 
-        ws.append(['SL.No', 'Name', 'Surname', 'Gender', 'Age' 'Voter ID', 'Address'])
+#         ws.append(['SL.No', 'Name', 'Surname', 'Gender', 'Age' 'Voter ID', 'Address'])
 
-        for voter in data:
-            ws.append([voter.sl_no, voter.name, voter.surname, voter.gender, voter.age, voter.voterId_no, voter.address])
+#         for voter in data:
+#             ws.append([voter.sl_no, voter.name, voter.surname, voter.gender, voter.age, voter.voterId_no, voter.address])
 
 
-        os.chdir("media/uploads/files")
-        excel_file_path = "voters_list.xlsx"
-        # wb.save(excel_file_path)
+#         response = HttpResponse(content_type='application/ms-excel')
+#         response['Content-Disposition'] = 'attachment; filename="voters_list.xlsx"'
+#         wb.save(response)
+#         print(response)
+#         return response
 
-        # Open the file for reading
-        with open(excel_file_path, 'rb') as excel_file:
-            response = FileResponse(excel_file, content_type='application/ms-excel')
-            response['Content-Disposition'] = 'attachment; filename="voters_list.xlsx"'
+def VotersListDownloadView(request, polling_station):
+    
+    polling_station = get_object_or_404(PollingStation, id=polling_station)
+    # polling_station = request.data.get('polling_station')
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=contractors_list.xls'
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Contractors Data')
+    row_num = 0
 
-        return response
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+    columns = ['SL.No', 'Booth No', 'Name', 'Surname', 'Gender', 'Age', 'Voter ID', 'Address', 'Caste', 'Mobile No', 'Occupation', 'Resident', 'Party', 'Joint Family', 'Benificers', 'Remarks', 'PartNameEn', 'Image', 'Latitude', 'Longitude']
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style) 
 
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    rows = Voter.objects.filter(is_updated=True,polling_station=polling_station).values_list('sl_no', 'polling_station', 'name', 'surname', 'gender', 'age', 'voterId_no', 'address', 'caste', 'mobile', 'occupation', 'resident', 'party', 'joint_family', 'benificers', 'remarks', 'partNameEn', 'image', 'latitude','longitude')
+    for row in rows:
+        row_num += 1
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, str(row[col_num]), font_style)
+    
+    wb.save(response)
+
+    return response
         
 class VoterListCreate(generics.ListCreateAPIView):
     queryset = Voter.objects.all()
