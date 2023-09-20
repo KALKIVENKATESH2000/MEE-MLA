@@ -6,6 +6,7 @@ User = get_user_model()
 from django.contrib.auth.models import Permission
 from .models import Profile, MLA, CustomUser
 from api.models import PollingStation
+from api.serializers import ConstituencySerializer, PollingStationSerializer
 
 
 # admin register serializer
@@ -136,6 +137,8 @@ class AgentLoginSerializer(serializers.Serializer):
   
     
 class UserSerializer(serializers.ModelSerializer):
+    constituency = ConstituencySerializer(read_only=True)
+    polling_stations = PollingStationSerializer(read_only=True, many=True)
     class Meta:
         model = CustomUser
         fields = ['id','first_name', 'last_name', 'email', 'phone', 'roles', 'constituency', 'polling_stations']
