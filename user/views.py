@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import Profile
+from .models import Profile, CustomUser
 
 # Create your views here.
 
@@ -139,3 +139,10 @@ class UserMLAView(generics.RetrieveAPIView):
                 pass
 
         return None
+    
+class GetAgentsView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]       
+    
+    def get_queryset(self):
+        return CustomUser.objects.filter(roles='agent',constituency=self.request.user.constituency).order_by('-id')

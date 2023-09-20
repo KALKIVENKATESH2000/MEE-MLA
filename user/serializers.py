@@ -138,7 +138,7 @@ class AgentLoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id','first_name', 'last_name', 'email', 'phone', 'mla']
+        fields = ['id','first_name', 'last_name', 'email', 'phone', 'roles', 'constituency', 'polling_stations']
         
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -146,7 +146,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Profile
-        fields = ['user', 'email', 'full_name','phone', 'gender','constituency', 'image', 'fcm_token']
+        fields = ['user', 'email', 'full_name','phone', 'gender', 'constituency', 'image', 'fcm_token']
         
 class MLASerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

@@ -13,4 +13,6 @@ urlpatterns = [
     path('details/', views.UserDetail.as_view(), name='user-details'),
     path('profile/', views.UserProfileDetail.as_view(), name='create-profile'),
     path('user-mla/', views.UserMLAView.as_view(), name='user-mla-profile'),
+    path('admin/agents/', views.GetAgentsView.as_view(), name='get-admin-agents'),
+
 ]
