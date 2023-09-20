@@ -403,7 +403,7 @@ def VotersListDownloadView(request, polling_station):
     polling_station = get_object_or_404(PollingStation, id=polling_station)
     # polling_station = request.data.get('polling_station')
     response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename=contractors_list.xls'
+    response['Content-Disposition'] = 'attachment; filename=voters_list.xls'
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Contractors Data')
     row_num = 0
