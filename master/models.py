@@ -229,6 +229,7 @@ class Voter(models.Model):
     image           = models.FileField(upload_to='uploads/voter',null=True,blank=True)
     latitude        = models.CharField(max_length=50, null=True,blank=True)
     longitude       = models.CharField(max_length=50,null=True,blank=True)
+    is_updated      = models.BooleanField(default=False, null=True, blank=True)
     createdAt       = models.DateTimeField(auto_now_add=True)
     updatedAt       = models.DateTimeField(auto_now=True)
 

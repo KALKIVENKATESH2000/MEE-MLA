@@ -97,7 +97,25 @@ class AgentRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
-    # email = serializers.EmailField()
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        user = CustomUser.objects.filter(email=data['email']).first()
+        if user and user.check_password(data['password']):
+            refresh = RefreshToken.for_user(user)
+            return {'success':'User loggedin sucessfully..',
+                    'id': user.id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'username': user.username,
+                    'access': str(refresh.access_token),
+                    'refresh': str(refresh)
+                }
+        raise serializers.ValidationError('Incorrect credentials')
+    
+class AgentLoginSerializer(serializers.Serializer):
     phone = serializers.IntegerField()
     password = serializers.CharField(write_only=True)
 

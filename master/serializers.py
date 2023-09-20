@@ -134,3 +134,7 @@ class VoterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voter
         fields = '__all__'
+        
+    def update(self, instance, validated_data):
+        instance.is_updated = True
+        return super().update(instance, validated_data)

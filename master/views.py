@@ -17,7 +17,8 @@ from rest_framework import generics
 import pandas as pd
 from tablib import Dataset
 from rest_framework.parsers import FileUploadParser,MultiPartParser
-
+from openpyxl import Workbook
+from django.http import HttpResponse, FileResponse
 
 
 # Create your views here.
@@ -373,6 +374,33 @@ class VoterUploadView(APIView):
         except Exception as e:
             return Response({'message': f'Error processing Excel file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
         
+   
+from django.conf import settings
+import os
+class VotersListDownloadView(APIView):
+    def get(self, request):
+        data = Voter.objects.filter(is_updated=True)
+        print(data)
+        wb = Workbook()
+        ws = wb.active
+
+        ws.append(['SL.No', 'Name', 'Surname', 'Gender', 'Age' 'Voter ID', 'Address'])
+
+        for voter in data:
+            ws.append([voter.sl_no, voter.name, voter.surname, voter.gender, voter.age, voter.voterId_no, voter.address])
+
+
+        os.chdir("media/uploads/files")
+        excel_file_path = "voters_list.xlsx"
+        # wb.save(excel_file_path)
+
+        # Open the file for reading
+        with open(excel_file_path, 'rb') as excel_file:
+            response = FileResponse(excel_file, content_type='application/ms-excel')
+            response['Content-Disposition'] = 'attachment; filename="voters_list.xlsx"'
+
+        return response
+
         
 class VoterListCreate(generics.ListCreateAPIView):
     queryset = Voter.objects.all()

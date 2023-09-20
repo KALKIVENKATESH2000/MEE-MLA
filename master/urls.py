@@ -1,15 +1,6 @@
 from django.urls import path
-# from master import views 
- 
-# urlpatterns = [ 
-#     path('reports/', views.report_list),
-#     path('reports/<str:pk>/', views.report_detail),
-
-#     # url(r'^api/tutorials$', views.tutorial_list),
-#     # url(r'^api/tutorials/(?P<pk>[0-9]+)$', views.tutorial_detail),
-#     # url(r'^api/tutorials/published$', views.tutorial_list_published)
-# ]
-
+from django.conf import settings
+from django.conf.urls.static import static
 from .views import *
 
 urlpatterns = [
@@ -37,6 +28,7 @@ urlpatterns = [
     path('answers/<int:pk>/', AnswerDetail.as_view(), name='answer-detail'),
     
     path('voters/upload/', VoterUploadView.as_view(), name='voter-upload'),
+    path('voters/list/export/', VotersListDownloadView.as_view(), name='voter-list-export'),
     path('voters/', VoterListCreate.as_view(), name='voter-list-create'),
     path('voters/<int:pk>/', VoterRetrieveUpdateDeleteView.as_view(), name='voter-update-detail-delete'),
     
@@ -44,3 +36,6 @@ urlpatterns = [
     # path('create-meet/', CreateEvent.as_view(), name='create-meet'),
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
