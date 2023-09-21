@@ -75,10 +75,15 @@ class ReportListCreateView(generics.ListCreateAPIView):
 class ReportListCountView(APIView):
     
     def get(self, request):
-        total_reports = Report.objects.count()
-        pending_reports = Report.objects.filter(status='pending').count()
-        solved_reports = Report.objects.filter(status='solved').count()
-        failed_reports = Report.objects.filter(status='failed').count()
+        permission_classes = [IsAuthenticated]
+        admin_constituency = request.user.constituency
+        admin_user = CustomUser.objects.filter(constituency=admin_constituency, roles='voter')
+        user_ids = admin_user.values_list('id', flat=True)
+        user_reports = Report.objects.filter(user__id__in=user_ids)
+        total_reports = user_reports.count()
+        pending_reports = user_reports.filter(status='pending').count()
+        solved_reports = user_reports.filter(status='solved').count()
+        failed_reports = user_reports.filter(status='failed').count()
         response_data = {
             'total_reports':total_reports,
             'pending_reports':pending_reports,
