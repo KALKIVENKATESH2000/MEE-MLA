@@ -11,6 +11,7 @@ ROLES = (
     ('superadmin', 'superadmin'),
     ('admin', 'admin'),
     ('agent', 'agent'),
+    ('voter', 'voter'),
 )
 
 def upload(instance, filename):

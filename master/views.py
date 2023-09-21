@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from user.permissions import IsRegularUser, IsSuperuser
-from user.models import Profile
+from user.models import Profile, CustomUser
 import requests
 from rest_framework import generics
 import pandas as pd
@@ -54,20 +54,16 @@ class ReportListCreateView(generics.ListCreateAPIView):
 
     def list(self, request, *args, **kwargs):
         permission_classes = [IsAuthenticated]
-        user = request.user
-        print(user)
-        admin_constituency = user.profile.constituency
-        user_profiles = Profile.objects.filter(constituency=admin_constituency)
-        print(user_profiles)
-        user_ids = user_profiles.values_list('user__id', flat=True)
+        admin_constituency = request.user.constituency
+        print(admin_constituency)
+        admin_user = CustomUser.objects.filter(constituency=admin_constituency, roles='voter')
+        print('############',admin_user)
+        user_ids = admin_user.values_list('id', flat=True)
         print('user_ids', user_ids)
         user_reports = Report.objects.filter(user__id__in=user_ids)
         user_reports_serializer = ReportSerializer(user_reports, many=True)
 
-        # queryset = self.get_queryset()
-        # serializer = self.get_serializer(queryset, many=True)
         response_data = {
-            # 'count': self.count,
             'reports': user_reports_serializer.data,
         }
         return Response(response_data)

@@ -94,6 +94,31 @@ class AgentRegistrationSerializer(serializers.ModelSerializer):
         polling_station.user.add(user)
         
         return user
+    
+class VoterRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    phone = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'phone', 'email', 'password', 'roles', 'constituency']
+
+    def create(self, validated_data):
+        
+        
+        voter = CustomUser.objects.create(
+            username=validated_data['phone'],
+            email=validated_data['email'],
+            phone=validated_data['phone'],
+            constituency=validated_data['constituency'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+        )
+        voter.set_password(validated_data['password'])
+        voter.roles = 'voter'
+        voter.save()
+                
+        return voter
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -129,6 +154,7 @@ class AgentLoginSerializer(serializers.Serializer):
                     'last_name': user.last_name,
                     'email': user.email,
                     'phone': user.phone,
+                    'roles': user.roles,
                     'username': user.username,
                     'access': str(refresh.access_token),
                     'refresh': str(refresh)

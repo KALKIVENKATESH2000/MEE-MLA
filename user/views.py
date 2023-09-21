@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import AgentRegistrationSerializer,AdminRegistrationSerializer,AgentLoginSerializer, LoginSerializer,UserSerializer, ProfileSerializer,SuperAdminRegistrationSerializer
+from .serializers import AgentRegistrationSerializer,AdminRegistrationSerializer,AgentLoginSerializer, VoterRegistrationSerializer, LoginSerializer,UserSerializer, ProfileSerializer,SuperAdminRegistrationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import generics, status
@@ -59,6 +59,24 @@ class AgentRegistrationView(APIView):
 
             responce_data = {
                 'success':'Agent registerd sucessfully..',
+                'agent': serializer.data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+
+            return Response(responce_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class VoterRegistrationView(APIView):
+    serializer_class = VoterRegistrationSerializer
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            refresh = RefreshToken.for_user(user)
+
+            responce_data = {
+                'success':'Voter registerd sucessfully..',
                 'agent': serializer.data,
                 'refresh': str(refresh),
                 'access': str(refresh.access_token)
