@@ -132,6 +132,12 @@ class Announcement(models.Model):
         
 class Poll(models.Model):
     question = models.CharField(max_length=200)
+    
+    # def get_choice_vote_counts(self):
+    #     return {choice.text: choice.votes for choice in self.choices.all()}
+    
+    def get_total_votes(self):
+        return self.choices.aggregate(total_votes=models.Sum('votes'))['total_votes'] or 0
 
     def __str__(self):
         return self.question

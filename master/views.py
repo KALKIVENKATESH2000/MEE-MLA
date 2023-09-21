@@ -55,6 +55,7 @@ class ReportListCreateView(generics.ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         permission_classes = [IsAuthenticated]
         user = request.user
+        print(user)
         admin_constituency = user.profile.constituency
         user_profiles = Profile.objects.filter(constituency=admin_constituency)
         print(user_profiles)

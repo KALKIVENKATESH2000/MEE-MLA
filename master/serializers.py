@@ -63,10 +63,17 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
 class PollSerializer(serializers.ModelSerializer):
     choices = ChoiceSerializer(many=True)
+    total_votes = serializers.SerializerMethodField()
 
     class Meta:
         model = Poll
-        fields = ['id', 'question', 'choices']
+        fields = ['id', 'question', 'choices', 'total_votes']
+        
+    def get_total_votes(self, obj):
+        return obj.get_total_votes()  
+          
+    # def get_vote_counts(self, obj):
+    #     return obj.get_choice_vote_counts()
 
     def create(self, validated_data):
         choices_data = validated_data.pop('choices')
