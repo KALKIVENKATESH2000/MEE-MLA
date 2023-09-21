@@ -16,5 +16,6 @@ urlpatterns = [
     path('user-mla/', views.UserMLAView.as_view(), name='user-mla-profile'),
     path('admin/agents/', views.GetAgentsView.as_view(), name='get-admin-agents'),
     path('admins/', views.GetAdminsView.as_view(), name='get-admins'),
+    path('status/<int:pk>/', views.UserStatusUpdate.as_view(), name='user-status-update'),
 
 ]

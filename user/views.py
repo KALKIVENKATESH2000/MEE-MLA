@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import AgentRegistrationSerializer,AdminRegistrationSerializer,AgentLoginSerializer, VoterRegistrationSerializer, LoginSerializer,UserSerializer, ProfileSerializer,SuperAdminRegistrationSerializer
+from .serializers import AgentRegistrationSerializer,AdminRegistrationSerializer,AgentLoginSerializer, VoterRegistrationSerializer, LoginSerializer,UserSerializer, ProfileSerializer,SuperAdminRegistrationSerializer, UserStatusSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import generics, status
@@ -126,6 +126,11 @@ class UserDetail(generics.RetrieveAPIView):
     def get_object(self):
         print(self.request.user.roles)
         return self.request.user
+    
+class UserStatusUpdate(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserStatusSerializer
+    permission_classes = [IsAuthenticated]
     
     
 class UserProfileDetail(generics.RetrieveUpdateAPIView):

@@ -147,8 +147,10 @@ class AgentLoginSerializer(serializers.Serializer):
     def validate(self, data):
         user = CustomUser.objects.filter(phone=data['phone']).first()
         if user and user.check_password(data['password']):
-            refresh = RefreshToken.for_user(user)
-            return {'success':'User loggedin sucessfully..',
+            if user.is_active:
+                refresh = RefreshToken.for_user(user)
+                return {
+                    'success': 'User logged in successfully..',
                     'id': user.id,
                     'first_name': user.first_name,
                     'last_name': user.last_name,
@@ -159,6 +161,8 @@ class AgentLoginSerializer(serializers.Serializer):
                     'access': str(refresh.access_token),
                     'refresh': str(refresh)
                 }
+            else:
+                raise serializers.ValidationError('User is not active.')
         raise serializers.ValidationError('Incorrect credentials')
   
     
@@ -167,7 +171,12 @@ class UserSerializer(serializers.ModelSerializer):
     polling_stations = PollingStationSerializer(read_only=True, many=True)
     class Meta:
         model = CustomUser
-        fields = ['id','first_name', 'last_name', 'email', 'phone', 'roles', 'constituency', 'polling_stations']
+        fields = ['id','first_name', 'last_name', 'email', 'phone', 'roles', 'is_active', 'constituency', 'polling_stations']
+
+class UserStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'is_active']
         
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
