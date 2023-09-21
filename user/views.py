@@ -149,7 +149,7 @@ class GetAgentsView(generics.ListAPIView):
     
 class GetAdminsView(generics.ListAPIView):
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]       
+    # permission_classes = [IsAuthenticated]       
     
     def get_queryset(self):
         return CustomUser.objects.filter(roles='admin').order_by('-id')
