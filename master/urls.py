@@ -28,6 +28,7 @@ urlpatterns = [
     path('answers/<int:pk>/', AnswerDetail.as_view(), name='answer-detail'),
     
     path('voters/upload/', VoterUploadView.as_view(), name='voter-upload'),
+    path('voters/re-upload/', VoterReUploadView.as_view(), name='voter-re_upload'),
     # path('voters/list/export/', VotersListDownloadView.as_view(), name='voter-list-export'),
     path('voters/list/export/<int:polling_station>', VotersListDownloadView, name='voter-list-export'),
     path('voters/', VoterListCreate.as_view(), name='voter-list-create'),

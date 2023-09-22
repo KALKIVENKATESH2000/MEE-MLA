@@ -390,6 +390,40 @@ class VoterUploadView(APIView):
         except Exception as e:
             return Response({'message': f'Error processing Excel file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
         
+
+class VoterReUploadView(APIView):
+    parser_classes = (MultiPartParser,)
+    print('kalki')
+
+    def post(self, request):
+        uploaded_file = request.data.get('file')
+        polling_station = request.data.get('polling_station')
+        print(polling_station)
+
+        if not uploaded_file.name.endswith('.xlsx'):
+            return Response({'message': 'Invalid file format. Please upload an Excel file.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:            
+            df = pd.read_excel(uploaded_file, engine='openpyxl')
+
+            column_mapping = {"Booth No": "booth_no", "Sno": "sl_no","VoterName": "name","Surname": "surname","Address": "address","Voter Id Number": "voterId_no"}
+
+            df.rename(columns=column_mapping, inplace=True)
+            
+            df['polling_station'] = polling_station
+
+            data_to_import = df.to_dict(orient='records')
+            serializer = VoterSerializer(data=data_to_import, many=True)
+
+            if serializer.is_valid():
+                serializer.save()
+
+                return Response({'message': 'Data from Excel file imported successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'message': f'Error processing Excel file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)  
    
 # class VotersListDownloadView(APIView):
     
