@@ -353,11 +353,17 @@ class VoterUploadView(APIView):
     def post(self, request):
         uploaded_file = request.data.get('file')
         polling_station = request.data.get('polling_station')
+        print(polling_station)
 
         if not uploaded_file.name.endswith('.xlsx'):
             return Response({'message': 'Invalid file format. Please upload an Excel file.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            polling_station_obj = PollingStation.objects.get(id=polling_station)
+
+            if polling_station_obj.is_uploded:
+                return Response({'message': f'Polling station "{polling_station}" has already been updated.'}, status=status.HTTP_400_BAD_REQUEST)
+            
             df = pd.read_excel(uploaded_file, engine='openpyxl')
 
             column_mapping = {"Booth No": "booth_no", "Sno": "sl_no","VoterName": "name","Surname": "surname","Address": "address","Voter Id Number": "voterId_no"}
@@ -365,15 +371,21 @@ class VoterUploadView(APIView):
             df.rename(columns=column_mapping, inplace=True)
             
             df['polling_station'] = polling_station
+            df['is_uploded'] = True 
 
             data_to_import = df.to_dict(orient='records')
             serializer = VoterSerializer(data=data_to_import, many=True)
 
             if serializer.is_valid():
                 serializer.save()
+                polling_station_obj.is_uploded = True
+                polling_station_obj.save()
                 return Response({'message': 'Data from Excel file imported successfully'}, status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except PollingStation.DoesNotExist:
+            return Response({'message': f'Polling station "{polling_station}" does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             return Response({'message': f'Error processing Excel file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
