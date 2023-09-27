@@ -31,6 +31,7 @@ urlpatterns = [
     path('voters/re-upload/', VoterReUploadView.as_view(), name='voter-re_upload'),
     # path('voters/list/export/', VotersListDownloadView.as_view(), name='voter-list-export'),
     path('voters/list/export/<int:polling_station>', VotersListDownloadView, name='voter-list-export'),
+    path('voters/updated/', VoterList.as_view(), name='updated-voters'),
     path('voters/', VoterListCreate.as_view(), name='voter-list-create'),
     path('voters/<int:pk>/', VoterRetrieveUpdateDeleteView.as_view(), name='voter-update-detail-delete'),
     

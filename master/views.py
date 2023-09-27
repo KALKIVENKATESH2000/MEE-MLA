@@ -474,6 +474,15 @@ def VotersListDownloadView(request, polling_station):
     wb.save(response)
 
     return response
+    
+class VoterList(generics.ListAPIView):
+    queryset = Voter.objects.all()
+    serializer_class = VoterSerializer
+    
+    def get_queryset(self):
+        polling_station = self.request.GET.get('polling_station')
+        print(polling_station)
+        return Voter.objects.filter(is_updated=True,polling_station=polling_station)    
         
 class VoterListCreate(generics.ListCreateAPIView):
     queryset = Voter.objects.all()
