@@ -170,6 +170,17 @@ class GetAgentsView(generics.ListAPIView):
     def get_queryset(self):
         return CustomUser.objects.filter(roles='agent',constituency=self.request.user.constituency).order_by('-id')
     
+class DeleteSelectedAgents(APIView):
+    def post(self, request):
+        agent_ids = request.data.get('agent_ids', [])
+        try:
+            agents_to_delete = CustomUser.objects.filter(roles='agent', id__in=agent_ids)
+            agents_to_delete.delete()
+            return Response({"message":"Selected agents deleted succefully.."},status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    
 class GetAdminsView(generics.ListAPIView):
     serializer_class = UserSerializer
     # permission_classes = [IsAuthenticated]       
