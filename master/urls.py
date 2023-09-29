@@ -30,7 +30,7 @@ urlpatterns = [
     path('voters/upload/', VoterUploadView.as_view(), name='voter-upload'),
     path('voters/re-upload/', VoterReUploadView.as_view(), name='voter-re_upload'),
     path('voters/villages/', VillagesByConstituencyView.as_view(), name='village-list'),
-    
+    path('voters/unique/', UniqueVoterListView.as_view(), name='unique-voter-list'),
     path('voters/list/export/', VotersListDownloadView, name='voter-list-export'),
     path('voters/updated/', VoterList.as_view(), name='updated-voters'),
     path('voters/', VoterListCreate.as_view(), name='voter-list-create'),

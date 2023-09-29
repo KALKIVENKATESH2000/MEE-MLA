@@ -518,3 +518,17 @@ class VillagesByConstituencyView(APIView):
             return Response({'villages':filtered_list}, status=status.HTTP_200_OK)
         except Voter.DoesNotExist:
             return Response({'message': 'Villages not found for the given constituency.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+class UniqueVoterListView(APIView):
+    def get(self, request):
+        try:
+            constituency_id = self.request.GET.get('constituency_id', None)
+            voter_by_constituency = Voter.objects.filter(constituency=constituency_id)
+            voters_list = voter_by_constituency.values('village', 'booth_no').distinct()
+            filtered_voters_data = [item for item in voters_list if item['village'] is not None]
+
+
+            return Response(filtered_voters_data, status=status.HTTP_200_OK)
+        except Voter.DoesNotExist:
+            return Response({'message': 'No voters found.'}, status=status.HTTP_404_NOT_FOUND)
