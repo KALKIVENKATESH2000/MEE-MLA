@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from user.models import CustomUser
-from api.models import PollingStation
+from api.models import PollingStation, Constituency
 
 # Create your models here.
 REPORT_STATUS = (
@@ -214,14 +214,16 @@ class Answer(models.Model):
 
 class Voter(models.Model):
     # user            = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True)
-    polling_station = models.ForeignKey(PollingStation,on_delete=models.SET_NULL,null=True)
-    booth_no        = models.IntegerField()
+    polling_station = models.ForeignKey(PollingStation,on_delete=models.SET_NULL,null=True, blank=True)
+    constituency    = models.ForeignKey(Constituency,on_delete=models.SET_NULL,null=True, blank=True)
+    booth_no        = models.IntegerField(null=True, blank=True)
     sl_no           = models.IntegerField()
     name            = models.CharField(max_length=50)
     gender          = models.CharField(max_length=10, null=True)
     age             = models.CharField(max_length=10, null=True)
-    surname         = models.CharField(max_length=50)
+    surname         = models.CharField(max_length=50, null=True)
     address         = models.CharField(max_length=100)
+    village         = models.CharField(max_length=100, null=True, blank=True)
     voterId_no      = models.CharField(max_length=50,null=True)
     caste           = models.CharField(max_length=50, null=True)
     mobile          = models.CharField(max_length=50, null=True)

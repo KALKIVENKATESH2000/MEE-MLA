@@ -19,7 +19,7 @@ from tablib import Dataset
 from rest_framework.parsers import FileUploadParser,MultiPartParser
 from openpyxl import Workbook
 from django.http import HttpResponse, FileResponse
-from api.models import PollingStation
+from api.models import PollingStation, Constituency
 import xlwt
 
 
@@ -352,40 +352,42 @@ class VoterUploadView(APIView):
 
     def post(self, request):
         uploaded_file = request.data.get('file')
-        polling_station = request.data.get('polling_station')
-        print(polling_station)
+        constituency = request.data.get('constituency')
+        print(constituency)
 
         if not uploaded_file.name.endswith('.xlsx'):
             return Response({'message': 'Invalid file format. Please upload an Excel file.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            polling_station_obj = PollingStation.objects.get(id=polling_station)
+            constituency_obj = Constituency.objects.get(id=constituency)
 
-            if polling_station_obj.is_uploded:
-                return Response({'message': f'Polling station "{polling_station}" has already been updated.'}, status=status.HTTP_400_BAD_REQUEST)
+            # if constituency_obj.is_uploded:
+            #     return Response({'message': f'Constituency "{constituency}" has already been updated.'}, status=status.HTTP_400_BAD_REQUEST)
             
             df = pd.read_excel(uploaded_file, engine='openpyxl')
 
-            column_mapping = {"Booth No": "booth_no", "Sno": "sl_no","VoterName": "name","Surname": "surname","Address": "address","Voter Id Number": "voterId_no"}
+            df = df.where(pd.notna(df), None)
+
+            column_mapping = {"Booth No": "booth_no", "Sno": "sl_no","VoterName": "name","Surname": "surname","Address": "address","Village": "village","Voter Id Number": "voterId_no"}
 
             df.rename(columns=column_mapping, inplace=True)
             
-            df['polling_station'] = polling_station
-            df['is_uploded'] = True 
-
+            df['constituency'] = constituency
+            df['is_uploded'] = True
+            
             data_to_import = df.to_dict(orient='records')
             serializer = VoterSerializer(data=data_to_import, many=True)
 
             if serializer.is_valid():
                 serializer.save()
-                polling_station_obj.is_uploded = True
-                polling_station_obj.save()
+                constituency_obj.is_uploded = True
+                constituency_obj.save()
                 return Response({'message': 'Data from Excel file imported successfully'}, status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        except PollingStation.DoesNotExist:
-            return Response({'message': f'Polling station "{polling_station}" does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Constituency.DoesNotExist:
+            return Response({'message': f'Polling station "{constituency}" does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             return Response({'message': f'Error processing Excel file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
@@ -397,8 +399,8 @@ class VoterReUploadView(APIView):
 
     def post(self, request):
         uploaded_file = request.data.get('file')
-        polling_station = request.data.get('polling_station')
-        print(polling_station)
+        constituency = request.data.get('constituency')
+        print(constituency)
 
         if not uploaded_file.name.endswith('.xlsx'):
             return Response({'message': 'Invalid file format. Please upload an Excel file.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -406,11 +408,11 @@ class VoterReUploadView(APIView):
         try:            
             df = pd.read_excel(uploaded_file, engine='openpyxl')
 
-            column_mapping = {"Booth No": "booth_no", "Sno": "sl_no","VoterName": "name","Surname": "surname","Address": "address","Voter Id Number": "voterId_no"}
+            column_mapping = {"Booth No": "booth_no", "Sno": "sl_no","VoterName": "name","Surname": "surname","Address": "address","Village": "village","Voter Id Number": "voterId_no"}
 
             df.rename(columns=column_mapping, inplace=True)
             
-            df['polling_station'] = polling_station
+            df['constituency'] = constituency
 
             data_to_import = df.to_dict(orient='records')
             serializer = VoterSerializer(data=data_to_import, many=True)
@@ -446,10 +448,11 @@ class VoterReUploadView(APIView):
 #         print(response)
 #         return response
 
-def VotersListDownloadView(request, polling_station):
+def VotersListDownloadView(request):
     
-    polling_station = get_object_or_404(PollingStation, id=polling_station)
-    # polling_station = request.data.get('polling_station')
+    # polling_station = get_object_or_404(PollingStation, id=polling_station)
+    village = request.GET.get('village', None)
+    print(village)
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=voters_list.xls'
     wb = xlwt.Workbook(encoding='utf-8')
@@ -458,14 +461,14 @@ def VotersListDownloadView(request, polling_station):
 
     font_style = xlwt.XFStyle()
     font_style.font.bold = True
-    columns = ['SL.No', 'Booth No', 'Name', 'Surname', 'Gender', 'Age', 'Voter ID', 'Address', 'Caste', 'Mobile No', 'Occupation', 'Resident', 'Party', 'Joint Family', 'Benificers', 'Remarks', 'PartNameEn', 'Image', 'Latitude', 'Longitude']
+    columns = ['SL.No', 'Booth No', 'Name', 'Surname', 'Gender', 'Age', 'Voter ID', 'Address', 'Village', 'Caste', 'Mobile No', 'Occupation', 'Resident', 'Party', 'Joint Family', 'Benificers', 'Remarks', 'PartNameEn', 'Image', 'Latitude', 'Longitude']
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style) 
 
     # Sheet body, remaining rows
     font_style = xlwt.XFStyle()
 
-    rows = Voter.objects.filter(is_updated=True,polling_station=polling_station).values_list('sl_no', 'polling_station', 'name', 'surname', 'gender', 'age', 'voterId_no', 'address', 'caste', 'mobile', 'occupation', 'resident', 'party', 'joint_family', 'benificers', 'remarks', 'partNameEn', 'image', 'latitude','longitude')
+    rows = Voter.objects.filter(is_updated=True,village=village).values_list('sl_no', 'polling_station', 'name', 'surname', 'gender', 'age', 'voterId_no', 'address', 'village', 'caste', 'mobile', 'occupation', 'resident', 'party', 'joint_family', 'benificers', 'remarks', 'partNameEn', 'image', 'latitude','longitude')
     for row in rows:
         row_num += 1
         for col_num in range(len(row)):
@@ -504,3 +507,14 @@ class VoterRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Voter.objects.all()
     serializer_class = VoterSerializer
     # permission_classes = [IsAuthenticated]
+    
+class VillagesByConstituencyView(APIView):
+    def get(self, request):
+        try:
+            constituency_id = self.request.GET.get('constituency_id', None)
+            villages_list = list(set(Voter.objects.values_list('village', flat=True)))
+            filtered_list = list(filter(lambda item: item is not None, villages_list))
+
+            return Response({'villages':filtered_list}, status=status.HTTP_200_OK)
+        except Voter.DoesNotExist:
+            return Response({'message': 'Villages not found for the given constituency.'}, status=status.HTTP_404_NOT_FOUND)
