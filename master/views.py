@@ -483,9 +483,10 @@ class VoterList(generics.ListAPIView):
     serializer_class = VoterSerializer
     
     def get_queryset(self):
-        polling_station = self.request.GET.get('polling_station')
-        print(polling_station)
-        return Voter.objects.filter(is_updated=True,polling_station=polling_station)    
+        village = self.request.GET.get('village')
+        # polling_station = self.request.GET.get('polling_station')
+        # print(polling_station)
+        return Voter.objects.filter(is_updated=True,village=village)    
         
 class VoterListCreate(generics.ListCreateAPIView):
     queryset = Voter.objects.all()
